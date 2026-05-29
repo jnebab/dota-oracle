@@ -9,5 +9,6 @@
       "includeFiles": "apps/api/app/**"
     }
   },
-  "rewrites": [{ "source": "/api/(.*)", "destination": "/api/index" }]
+  "rewrites": [{ "source": "/api/(.*)", "destination": "/api/index" }],
+  "crons": [{ "path": "/api/cron/refresh-meta", "schedule": "0 0 1,15 * *" }]
 }

@@ -8,7 +8,7 @@ cron-triggered meta refresh.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import live, meta, player
+from app.routers import cron, live, meta, player
 from app.settings import get_settings
 
 app = FastAPI(title="Draft Oracle API", version="0.1.0")
@@ -24,6 +24,7 @@ app.add_middleware(
 app.include_router(meta.router)
 app.include_router(player.router)
 app.include_router(live.router)
+app.include_router(cron.router)
 
 
 @app.get("/api/health")

@@ -17,6 +17,13 @@ class Settings(BaseSettings):
     opendota_key: str | None = None
     steam_key: str | None = None
 
+    # Upstash Redis (M5) — stores the cron-refreshed meta snapshot.
+    upstash_redis_rest_url: str | None = None
+    upstash_redis_rest_token: str | None = None
+
+    # Guards the cron-triggered refresh endpoint (Vercel sends it as a Bearer header).
+    cron_secret: str | None = None
+
     # Defaults for the meta endpoint.
     default_patch: str = "7.41c"
 
