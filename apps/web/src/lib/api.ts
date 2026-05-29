@@ -34,7 +34,16 @@ export type PlayerResponse = z.infer<typeof playerResponseSchema>;
 
 async function getJson<T>(path: string, schema: z.ZodType<T>): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`);
-  if (!res.ok) throw new Error(`${path} → ${res.status}`);
+  if (!res.ok) {
+    // Surface the API's `detail` message when present.
+    let detail: string | undefined;
+    try {
+      detail = (await res.json())?.detail;
+    } catch {
+      // non-JSON error body; fall through to the status code
+    }
+    throw new Error(detail ?? `Request failed (${res.status})`);
+  }
   return schema.parse(await res.json());
 }
 
@@ -48,4 +57,25 @@ export function getMeta(params?: { patch?: string; bracket?: string }): Promise<
 
 export function getPlayer(handle: string): Promise<PlayerResponse> {
   return getJson(`/api/player/${encodeURIComponent(handle)}`, playerResponseSchema);
+}
+
+const livePlayerSchema = z.object({
+  hero_id: z.number(),
+  hero: z.string().nullable(),
+  is_radiant: z.boolean(),
+});
+
+export const liveMatchResponseSchema = z.object({
+  match_id: z.number().nullable(),
+  game_time: z.number(),
+  searched_account_id: z.number(),
+  searched_is_radiant: z.boolean().nullable(),
+  radiant: z.array(z.string()),
+  dire: z.array(z.string()),
+  players: z.array(livePlayerSchema),
+});
+export type LiveMatchResponse = z.infer<typeof liveMatchResponseSchema>;
+
+export function getLive(handle: string): Promise<LiveMatchResponse> {
+  return getJson(`/api/live/${encodeURIComponent(handle)}`, liveMatchResponseSchema);
 }

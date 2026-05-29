@@ -22,10 +22,12 @@ import {
 } from "lucide-react";
 import { Fragment, type ReactNode, useMemo, useState } from "react";
 import { HeroPicker } from "./components/HeroPicker";
+import { LiveImport } from "./components/LiveImport";
 import { MetaStatus } from "./components/MetaStatus";
 import { Portrait } from "./components/Portrait";
 import { PosSelect } from "./components/PosSelect";
 import { TierPill } from "./components/TierPill";
+import type { LiveMatchResponse } from "./lib/api";
 
 interface BoardPick {
   id: string;
@@ -95,6 +97,19 @@ export function DraftOracle() {
     updateSide(side, (arr) => arr.map((x) => (x.id === id ? { ...x, pos } : x)));
   const removeB = (side: Side, id: string) =>
     updateSide(side, (arr) => arr.filter((x) => x.id !== id));
+
+  const importLive = (match: LiveMatchResponse) => {
+    const toPicks = (slugs: string[]): BoardPick[] =>
+      slugs
+        .filter((id) => HERO_BY_ID[id])
+        .slice(0, 5)
+        .map((id) => ({ id, pos: null }));
+    // null or true → treat radiant as the ally side; false → ally is dire.
+    const allyRadiant = match.searched_is_radiant !== false;
+    setTeam(toPicks(allyRadiant ? match.radiant : match.dire));
+    setEnemy(toPicks(allyRadiant ? match.dire : match.radiant));
+    setShowBoard(false);
+  };
 
   const bracketFactor = bracketFactorFor(rank);
   const recs = useMemo<Recommendation[]>(() => {
@@ -266,6 +281,9 @@ export function DraftOracle() {
             />
           )}
         </Card>
+
+        {/* LIVE IMPORT */}
+        <LiveImport onImport={importLive} />
 
         {/* DRAFT BOARD */}
         <Card>

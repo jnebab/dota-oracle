@@ -34,3 +34,28 @@ class PlayerResponse(BaseModel):
     match_count: int
     win_rate: float
     top_heroes: list[PlayerHero]
+
+
+class LivePlayer(BaseModel):
+    """One player in a live match."""
+
+    hero_id: int
+    hero: str | None = None  # our hero slug, when the numeric id maps cleanly
+    is_radiant: bool
+
+
+class LiveMatchResponse(BaseModel):
+    """Live match served by ``GET /api/live/{handle}``.
+
+    ``radiant``/``dire`` are hero-slug lists ready to drop onto the board;
+    ``searched_is_radiant`` says which side the looked-up player is on so the
+    client can pick ally vs enemy.
+    """
+
+    match_id: int | None = None
+    game_time: int
+    searched_account_id: int
+    searched_is_radiant: bool | None = None
+    radiant: list[str]
+    dire: list[str]
+    players: list[LivePlayer]
