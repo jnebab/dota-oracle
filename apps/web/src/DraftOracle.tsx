@@ -23,6 +23,7 @@ import {
 import { Fragment, type ReactNode, useMemo, useState } from "react";
 import { HeroPicker } from "./components/HeroPicker";
 import { MetaStatus } from "./components/MetaStatus";
+import { MicDictate } from "./components/MicDictate";
 import { Portrait } from "./components/Portrait";
 import { PosSelect } from "./components/PosSelect";
 import { RecentImport } from "./components/RecentImport";
@@ -110,6 +111,26 @@ export function DraftOracle() {
     setTeam(sidePicks(allyRadiant));
     setEnemy(sidePicks(!allyRadiant));
     setShowBoard(false);
+  };
+
+  // Append dictated/parsed heroes to the current board side (skips dupes + full sides).
+  const addManyToBoard = (ids: string[]) => {
+    const setter = boardTarget === "ally" ? setTeam : setEnemy;
+    setter((prev) => {
+      const used = new Set<string>([
+        ...team.map((x) => x.id),
+        ...enemy.map((x) => x.id),
+        ...prev.map((x) => x.id),
+      ]);
+      const next = [...prev];
+      for (const id of ids) {
+        if (next.length >= 5) break;
+        if (!HERO_BY_ID[id] || used.has(id)) continue;
+        next.push({ id, pos: null });
+        used.add(id);
+      }
+      return next;
+    });
   };
 
   const bracketFactor = bracketFactorFor(rank);
@@ -320,6 +341,20 @@ export function DraftOracle() {
                 </button>
               ))}
             </div>
+          </div>
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <span className="fs10 uppercase tracking-widest" style={{ color: "#566070" }}>
+              Voice
+            </span>
+            <MicDictate
+              targetLabel={boardTarget === "ally" ? "My Team" : "Enemy"}
+              accent={boardTarget === "ally" ? "#74b13f" : "#d1463a"}
+              onHeroes={addManyToBoard}
+            />
+            <span className="fs10 italic" style={{ color: "#566070" }}>
+              → adds to {boardTarget === "ally" ? "your team" : "the enemy"}; e.g. say "wraith king,
+              lion, crystal maiden"
+            </span>
           </div>
           {showBoard && (
             <HeroPicker

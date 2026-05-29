@@ -8,6 +8,7 @@ export * from "./synergies";
 export * from "./meta";
 export * from "./bracket";
 export * from "./builds";
+export * from "./aliases";
 
 import { BRACKET_FIT } from "./bracket";
 import { CORE_BUILDS } from "./builds";

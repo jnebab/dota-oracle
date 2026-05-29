@@ -5,5 +5,6 @@ export * from "./tags";
 export * from "./bracket";
 export * from "./score";
 export * from "./items";
+export * from "./parse";
 
 export const ENGINE_VERSION = "0.1.0";
