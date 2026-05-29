@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Draft Oracle — Architecture</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#090d13; --panel:#10161f; --panel2:#0c1119;
+    --line:rgba(79,214,194,.14); --ink:#dbe4ee; --muted:#76859a; --dim:#4a5667;
+    --cyan:#4fd6c2; --amber:#e8b54e; --violet:#8f9cf2; --rose:#e8728a;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:'IBM Plex Sans',sans-serif; line-height:1.5;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px),
+      radial-gradient(ellipse 70% 50% at 80% -5%, rgba(79,214,194,.07), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 5% 105%, rgba(143,156,242,.07), transparent 60%);
+    background-size:30px 30px, 30px 30px, 100% 100%, 100% 100%;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:40px 24px 80px}
+  .mono{font-family:'IBM Plex Mono',monospace}
+  .display{font-family:'Syne',sans-serif}
+  h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(34px,6vw,58px);line-height:.98;margin:0;letter-spacing:-.02em}
+  .tag{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan)}
+  .sub{color:var(--muted);max-width:60ch;margin-top:10px}
+  .rule{height:1px;background:linear-gradient(90deg,var(--cyan),transparent);margin:26px 0;opacity:.5}
+
+  .reveal{opacity:0;transform:translateY(14px);animation:rise .7s cubic-bezier(.2,.7,.3,1) forwards}
+  @keyframes rise{to{opacity:1;transform:none}}
+
+  .section-h{display:flex;align-items:baseline;gap:12px;margin:46px 0 18px}
+  .section-h .num{font-family:'IBM Plex Mono',monospace;color:var(--cyan);font-size:13px}
+  .section-h h2{font-family:'Syne',sans-serif;font-weight:700;font-size:22px;margin:0;letter-spacing:-.01em}
+
+  /* tech chips */
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:5px 10px;border-radius:6px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);color:#c2ccd9}
+  .chip b{color:var(--cyan);font-weight:600}
+
+  /* layered system map */
+  .layer{position:relative;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:linear-gradient(180deg,var(--panel),var(--panel2));padding:16px 16px 18px;margin:0}
+  .layer + .conn{height:34px;display:flex;align-items:center;justify-content:center;flex-direction:column;color:var(--dim)}
+  .conn .lbl{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;color:var(--muted);margin-bottom:2px}
+  .conn .ar{font-size:15px;color:var(--cyan);opacity:.7;line-height:1}
+  .layer-tag{position:absolute;top:-9px;left:16px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;padding:2px 8px;border-radius:5px;background:var(--bg);border:1px solid rgba(255,255,255,.12)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:8px}
+  .card{border-radius:10px;padding:11px 12px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07)}
+  .card .t{font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:600;color:var(--ink)}
+  .card .d{font-size:11.5px;color:var(--muted);margin-top:3px}
+  .card.accent-cyan{border-color:rgba(79,214,194,.32);box-shadow:inset 0 0 22px rgba(79,214,194,.06)}
+  .card.accent-amber{border-color:rgba(232,181,78,.3);box-shadow:inset 0 0 22px rgba(232,181,78,.06)}
+  .card.accent-violet{border-color:rgba(143,156,242,.3);box-shadow:inset 0 0 22px rgba(143,156,242,.06)}
+  .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;vertical-align:middle}
+
+  .callout{margin-top:14px;border-left:2px solid var(--amber);background:rgba(232,181,78,.06);padding:10px 14px;border-radius:0 8px 8px 0;font-size:13px;color:#d9d0bb}
+  .callout b{color:var(--amber)}
+
+  /* sequence flow */
+  .flow{display:flex;flex-direction:column;gap:0}
+  .step{display:flex;gap:14px;align-items:flex-start;position:relative;padding:10px 0}
+  .step .n{flex:0 0 30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;color:#06120f;background:var(--cyan)}
+  .step.alt .n{background:var(--violet);color:#0a0d1a}
+  .step .body{flex:1;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:9px 13px;background:rgba(255,255,255,.025)}
+  .step .who{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--cyan)}
+  .step.alt .who{color:var(--violet)}
+  .step .txt{font-size:13px;margin-top:2px;color:#cdd6e1}
+  .step .txt code{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--amber);background:rgba(232,181,78,.08);padding:1px 5px;border-radius:4px}
+  .spine{position:absolute;left:14px;top:40px;bottom:-10px;width:1px;background:linear-gradient(var(--cyan),transparent);opacity:.35}
+
+  /* repo tree */
+  pre.tree{font-family:'IBM Plex Mono',monospace;font-size:12.5px;line-height:1.65;background:var(--panel2);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:18px 18px;overflow-x:auto;color:#b9c4d2;margin:0}
+  pre.tree .dir{color:var(--cyan)}
+  pre.tree .pkg{color:var(--amber)}
+  pre.tree .c{color:var(--dim)}
+
+  /* roadmap */
+  .road{display:grid;gap:10px}
+  .ms{display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:start;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:12px 14px;background:rgba(255,255,255,.02)}
+  .ms .m{font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--cyan);font-size:15px}
+  .ms .m small{display:block;color:var(--muted);font-weight:400;font-size:10px;letter-spacing:.08em;margin-top:2px}
+  .ms .mt{font-family:'IBM Plex Sans';font-weight:600;font-size:14px}
+  .ms .md{font-size:12.5px;color:var(--muted);margin-top:2px}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:720px){.grid2{grid-template-columns:1fr}}
+  .contract{border:1px solid rgba(255,255,255,.08);border-radius:10px;background:var(--panel2);padding:13px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#b9c4d2}
+  .contract .k{color:var(--cyan)} .contract .ty{color:var(--amber)} .contract .cm{color:var(--dim)}
+
+  .foot{margin-top:50px;border:1px solid rgba(79,214,194,.25);border-radius:14px;padding:18px 20px;background:linear-gradient(180deg,rgba(79,214,194,.06),transparent)}
+  .foot b{color:var(--cyan)}
+  .kbd{font-family:'IBM Plex Mono',monospace;font-size:12px;background:#05080c;border:1px solid rgba(255,255,255,.12);border-radius:5px;padding:2px 7px;color:var(--amber)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="reveal">
+    <span class="tag">System Architecture · v1 · draft</span>
+    <h1>DRAFT&nbsp;ORACLE</h1>
+    <p class="sub">A Dota 2 draft &amp; live-match advisor. Recommends carries from your pool for your role, weighted by 7.41c meta + bracket, with lineup-tuned item builds — and pulls a live game straight off STRATZ by name or SteamID.</p>
+  </div>
+
+  <div class="rule reveal" style="animation-delay:.05s"></div>
+
+  <div class="chips reveal" style="animation-delay:.1s">
+    <span class="chip"><b>web</b> · React 18 + TypeScript + Vite</span>
+    <span class="chip">Tailwind</span>
+    <span class="chip">TanStack Query</span>
+    <span class="chip"><b>api</b> · FastAPI · Python 3.12</span>
+    <span class="chip">Pydantic v2 · httpx</span>
+    <span class="chip">SQLModel + SQLite/Postgres</span>
+    <span class="chip">ARQ + Redis</span>
+    <span class="chip"><b>pkg</b> · shared TS engine + data (zod)</span>
+    <span class="chip">pnpm + Turborepo · uv</span>
+    <span class="chip">Docker · Vercel + Fly.io</span>
+  </div>
+
+  <!-- SYSTEM MAP -->
+  <div class="section-h reveal" style="animation-delay:.15s"><span class="num">01</span><h2>System map</h2></div>
+
+  <div class="reveal" style="animation-delay:.2s">
+    <div class="layer">
+      <span class="layer-tag" style="color:var(--cyan)">Client · browser</span>
+      <div class="cards">
+        <div class="card accent-cyan"><div class="t">Draft UI</div><div class="d">pool · board · role · rank · recs</div></div>
+        <div class="card accent-cyan"><div class="t">Item Guide</div><div class="d">core path + lineup-tuned items</div></div>
+        <div class="card accent-cyan"><div class="t">Live Import</div><div class="d">name / SteamID → autofill board</div></div>
+        <div class="card accent-amber"><div class="t">⚙ engine (bundled)</div><div class="d">pure scoring · counters · synergy · tags · meta · bracket</div></div>
+        <div class="card accent-amber"><div class="t">▣ data (bundled)</div><div class="d">heroes · counters · builds · seed meta</div></div>
+      </div>
+    </div>
+
+    <div class="conn"><span class="lbl">HTTPS · JSON · TanStack Query</span><span class="ar">▼</span></div>
+
+    <div class="layer">
+      <span class="layer-tag" style="color:var(--cyan)">API · FastAPI (BFF)</span>
+      <div class="cards">
+        <div class="card"><div class="t">/api/meta</div><div class="d">tiers + winrates by patch &amp; bracket</div></div>
+        <div class="card"><div class="t">/api/live/{handle}</div><div class="d">resolve → STRATZ live match → board</div></div>
+        <div class="card"><div class="t">/api/player/{id}</div><div class="d">recent matches · pool hints</div></div>
+        <div class="card"><div class="t">services</div><div class="d">stratz · opendota · steamid · meta</div></div>
+        <div class="card"><div class="t">settings</div><div class="d">🔑 STRATZ token (server-only)</div></div>
+      </div>
+    </div>
+
+    <div class="conn"><span class="lbl">async httpx · cached</span><span class="ar">▼</span></div>
+
+    <div class="layer">
+      <span class="layer-tag" style="color:var(--amber)">Data &amp; Jobs</span>
+      <div class="cards">
+        <div class="card accent-amber"><div class="t">Redis</div><div class="d">cache · ARQ queue</div></div>
+        <div class="card accent-amber"><div class="t">ARQ worker</div><div class="d">daily refresh_meta → tier snapshot</div></div>
+        <div class="card accent-amber"><div class="t">SQLite / Postgres</div><div class="d">saved drafts · pools (optional)</div></div>
+      </div>
+    </div>
+
+    <div class="conn"><span class="lbl">rate-limited · token / key</span><span class="ar">▼</span></div>
+
+    <div class="layer">
+      <span class="layer-tag" style="color:var(--violet)">External APIs</span>
+      <div class="cards">
+        <div class="card accent-violet"><div class="t">STRATZ GraphQL</div><div class="d">live match · winrates · 🔑 token</div></div>
+        <div class="card accent-violet"><div class="t">OpenDota REST</div><div class="d">player search · recent · hero stats</div></div>
+        <div class="card accent-violet"><div class="t">Steam Web API</div><div class="d">SteamID → persona (optional)</div></div>
+      </div>
+    </div>
+
+    <div class="callout"><b>Key split:</b> the scoring engine + seed data ship <b>inside the client</b> → recommendations are instant and work offline. The backend only does what the browser can't: hold the STRATZ token, call rate-limited external APIs, and refresh meta on a schedule.</div>
+  </div>
+
+  <!-- LIVE FLOW -->
+  <div class="section-h reveal" style="animation-delay:.1s"><span class="num">02</span><h2>Live-match track · request flow</h2></div>
+  <div class="flow reveal" style="animation-delay:.15s">
+    <div class="step"><div class="spine"></div><div class="n">1</div><div class="body"><div class="who">User → Web</div><div class="txt">Enters a username or <code>SteamID64</code> in the Live Import panel.</div></div></div>
+    <div class="step"><div class="spine"></div><div class="n">2</div><div class="body"><div class="who">Web → API</div><div class="txt"><code>GET /api/live/{handle}</code> via TanStack Query.</div></div></div>
+    <div class="step"><div class="spine"></div><div class="n">3</div><div class="body"><div class="who">API · steamid service</div><div class="txt">SteamID64 → 32-bit account id <code>id − 76561197960265728</code>; or a name → OpenDota <code>/search</code> → top match.</div></div></div>
+    <div class="step"><div class="spine"></div><div class="n">4</div><div class="body"><div class="who">API → STRATZ</div><div class="txt">GraphQL <code>player(steamAccountId).liveMatch</code> with Bearer token.</div></div></div>
+    <div class="step"><div class="spine"></div><div class="n">5</div><div class="body"><div class="who">API → Web</div><div class="txt">If live: returns <code>{ radiant[], dire[], positions, gameTime }</code>. If not: 404 + last match fallback.</div></div></div>
+    <div class="step alt"><div class="n">6</div><div class="body"><div class="who">Web · engine</div><div class="txt">Maps heroes onto the enemy/ally board → re-scores your pool → updated recs + item plan, no typing.</div></div></div>
+  </div>
+
+  <!-- REPO -->
+  <div class="section-h reveal"><span class="num">03</span><h2>Repository layout</h2></div>
+  <pre class="tree reveal"><span class="dir">draft-oracle/</span>
+├─ <span class="dir">apps/</span>
+│  ├─ <span class="dir">web/</span>                  <span class="c"># Vite · React · TS · Tailwind</span>
+│  │  └─ src/features/{<span class="pkg">draft</span>,<span class="pkg">live</span>}/ · lib/api.ts
+│  └─ <span class="dir">api/</span>                  <span class="c"># FastAPI · Python 3.12 (uv)</span>
+│     └─ app/{routers,services,jobs,models}.py · settings.py
+├─ <span class="dir">packages/</span>
+│  ├─ <span class="pkg">engine/</span>              <span class="c"># pure TS: score · tags · items · bracket</span>
+│  └─ <span class="pkg">data/</span>                <span class="c"># versioned JSON + zod schemas</span>
+│     └─ heroes · counters · synergies · builds · bracketFit · meta.7.41c
+├─ docker-compose.yml      <span class="c"># api + redis + db (local)</span>
+├─ turbo.json · pnpm-workspace.yaml
+├─ <span class="pkg">CLAUDE.md</span>               <span class="c"># ← context for the Claude Code session</span>
+└─ README.md</pre>
+
+  <!-- CONTRACTS + ROADMAP -->
+  <div class="section-h reveal"><span class="num">04</span><h2>Core contracts &amp; build roadmap</h2></div>
+  <div class="grid2 reveal">
+    <div class="contract">
+<span class="cm">// packages/data — the source of truth</span><br>
+<span class="k">Hero</span> { id; name; attr; roles[]; tags[] }<br>
+<span class="k">MetaTier</span> { heroId; tier: <span class="ty">S|A|B|C|D</span>; note }<br>
+<span class="k">BracketFit</span> { heroId; w; note }<br>
+<span class="k">Build</span> { heroId; key; path[]; note }<br>
+<span class="cm">// packages/engine — pure fns</span><br>
+<span class="k">scoreHero</span>(cand, team, enemy, bracketF)<br>
+<span class="k">buildGuide</span>(hero, enemy) → path + situational<br>
+<span class="cm">// api — wire types</span><br>
+<span class="k">LiveMatch</span> { radiant[]; dire[]; positions; gameTime }
+    </div>
+    <div class="road">
+      <div class="ms"><div class="m">M0<small>scaffold</small></div><div><div class="mt">Monorepo + CI</div><div class="md">pnpm/turbo, uv api, Biome + ruff, env, docker-compose.</div></div></div>
+      <div class="ms"><div class="m">M1<small>extract</small></div><div><div class="mt">Engine + data packages</div><div class="md">Port scoreHero / tagEdges / situational + all hero data; zod schemas; vitest.</div></div></div>
+      <div class="ms"><div class="m">M2<small>web</small></div><div><div class="mt">Rebuild UI on the engine pkg</div><div class="md">Same UX; TanStack Query against a mock API.</div></div></div>
+      <div class="ms"><div class="m">M3<small>api</small></div><div><div class="mt">FastAPI: meta + player</div><div class="md">httpx clients, settings, pytest; serve seed meta first.</div></div></div>
+      <div class="ms"><div class="m">M4<small>live</small></div><div><div class="mt">STRATZ live track</div><div class="md">steamid util · stratz service · /api/live · live-import panel.</div></div></div>
+      <div class="ms"><div class="m">M5<small>jobs</small></div><div><div class="mt">ARQ meta refresh</div><div class="md">Daily tier recompute → replace hand-tuned tiers; bracket overlay stays.</div></div></div>
+      <div class="ms"><div class="m">M6<small>ship</small></div><div><div class="mt">Deploy</div><div class="md">web → Vercel, api → Fly.io, Upstash Redis, secrets, README.</div></div></div>
+    </div>
+  </div>
+
+  <div class="foot reveal">
+    <b>→ Hand-off to Claude Code.</b> Drop the included <span class="kbd">CLAUDE.md</span> at the repo root, then run <span class="kbd">claude</span> in the folder and paste the kickoff prompt. Start at <b>M0 → M1</b>: scaffold the monorepo and lift the existing engine + data out of the prototype <span class="kbd">.jsx</span> into <span class="kbd">packages/engine</span> and <span class="kbd">packages/data</span> first — everything else builds on that.
+  </div>
+
+</div>
+</body>
+</html>
