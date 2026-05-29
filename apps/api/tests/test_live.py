@@ -95,6 +95,25 @@ def test_live_upstream_error_502(monkeypatch: pytest.MonkeyPatch) -> None:
     assert client.get("/api/live/42").status_code == 502
 
 
+def test_live_graphql_error_502(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def fake_live(_id: int) -> dict:
+        raise stratz.StratzError("STRATZ GraphQL error: Cannot query field 'heroId'")
+
+    monkeypatch.setattr(stratz, "fetch_live_match", fake_live)
+    res = client.get("/api/live/42")
+    assert res.status_code == 502
+    assert "GraphQL error" in res.json()["detail"]
+
+
+def test_live_search_error_502(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def fake_search(_q: str) -> list[dict]:
+        raise httpx.ConnectError("opendota down")
+
+    monkeypatch.setattr(opendota, "search_players", fake_search)
+    res = client.get("/api/live/somename")
+    assert res.status_code == 502
+
+
 def test_name_resolution_no_match(monkeypatch: pytest.MonkeyPatch) -> None:
     async def fake_search(_q: str) -> list[dict]:
         return []
