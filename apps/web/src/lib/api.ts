@@ -59,23 +59,24 @@ export function getPlayer(handle: string): Promise<PlayerResponse> {
   return getJson(`/api/player/${encodeURIComponent(handle)}`, playerResponseSchema);
 }
 
-const livePlayerSchema = z.object({
+const matchPlayerSchema = z.object({
   hero_id: z.number(),
   hero: z.string().nullable(),
   is_radiant: z.boolean(),
+  position: z.string().nullable(),
 });
 
-export const liveMatchResponseSchema = z.object({
+export const matchImportResponseSchema = z.object({
   match_id: z.number().nullable(),
-  game_time: z.number(),
+  duration_seconds: z.number(),
   searched_account_id: z.number(),
   searched_is_radiant: z.boolean().nullable(),
   radiant: z.array(z.string()),
   dire: z.array(z.string()),
-  players: z.array(livePlayerSchema),
+  players: z.array(matchPlayerSchema),
 });
-export type LiveMatchResponse = z.infer<typeof liveMatchResponseSchema>;
+export type MatchImportResponse = z.infer<typeof matchImportResponseSchema>;
 
-export function getLive(handle: string): Promise<LiveMatchResponse> {
-  return getJson(`/api/live/${encodeURIComponent(handle)}`, liveMatchResponseSchema);
+export function getRecentMatch(handle: string): Promise<MatchImportResponse> {
+  return getJson(`/api/recent/${encodeURIComponent(handle)}`, matchImportResponseSchema);
 }

@@ -8,16 +8,21 @@ STRATZ_URL = "https://api.stratz.com/graphql"
 # for token auth to be accepted.
 _USER_AGENT = "STRATZ_API"
 
-LIVE_MATCH_QUERY = """
-query LiveMatch($id: Long!) {
+# STRATZ has no per-player live-match lookup (live data only covers watch-listed
+# pro/league games). The reliable, universal source is the player's most recent
+# match via PlayerType.matches, which also exposes each player's role/position.
+LAST_MATCH_QUERY = """
+query LastMatch($id: Long!) {
   player(steamAccountId: $id) {
-    liveMatch {
-      matchId
-      gameTime
+    matches(request: { take: 1 }) {
+      id
+      didRadiantWin
+      durationSeconds
       players {
         steamAccountId
         heroId
         isRadiant
+        position
       }
     }
   }
@@ -33,11 +38,11 @@ class StratzError(RuntimeError):
     """Raised when STRATZ returns a GraphQL error or an unparseable body."""
 
 
-async def fetch_live_match(account_id: int) -> dict | None:
-    """Return the player's current live match payload, or ``None`` if not in one.
+async def fetch_last_match(account_id: int) -> dict | None:
+    """Return the player's most recent match, or ``None`` if they have none.
 
-    Raises ``StratzNotConfigured`` when no token is set, and propagates
-    ``httpx.HTTPError`` for transport/HTTP failures.
+    Raises ``StratzNotConfigured`` when no token is set, ``StratzError`` on
+    GraphQL/HTTP errors (with the upstream message attached).
     """
     settings = get_settings()
     if not settings.stratz_token:
@@ -48,7 +53,7 @@ async def fetch_live_match(account_id: int) -> dict | None:
         "User-Agent": _USER_AGENT,
         "Content-Type": "application/json",
     }
-    payload = {"query": LIVE_MATCH_QUERY, "variables": {"id": account_id}}
+    payload = {"query": LAST_MATCH_QUERY, "variables": {"id": account_id}}
     async with httpx.AsyncClient(timeout=15.0) as client:
         res = await client.post(STRATZ_URL, json=payload, headers=headers)
 
@@ -61,8 +66,6 @@ async def fetch_live_match(account_id: int) -> dict | None:
     except ValueError as exc:  # non-JSON body (e.g. HTML error page)
         raise StratzError(f"STRATZ returned a non-JSON response: {res.text[:200]!r}") from exc
 
-    # Surface GraphQL-level errors (e.g. wrong field names) instead of silently
-    # treating them as "no live match".
     if isinstance(body, dict) and body.get("errors"):
         messages = "; ".join(
             str(e.get("message", e)) for e in body["errors"] if isinstance(e, dict)
@@ -70,4 +73,5 @@ async def fetch_live_match(account_id: int) -> dict | None:
         raise StratzError(f"STRATZ GraphQL error: {messages or body['errors']}")
 
     player = (body.get("data") or {}).get("player") or {}
-    return player.get("liveMatch")
+    matches = player.get("matches") or []
+    return matches[0] if matches else None

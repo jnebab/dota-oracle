@@ -11,7 +11,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.routers import cron, live, meta, player
+from app.routers import cron, meta, player, recent
 from app.settings import get_settings
 
 log = logging.getLogger("dota_oracle")
@@ -35,7 +35,7 @@ app.add_middleware(
 
 app.include_router(meta.router)
 app.include_router(player.router)
-app.include_router(live.router)
+app.include_router(recent.router)
 app.include_router(cron.router)
 
 

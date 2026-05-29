@@ -22,12 +22,12 @@ import {
 } from "lucide-react";
 import { Fragment, type ReactNode, useMemo, useState } from "react";
 import { HeroPicker } from "./components/HeroPicker";
-import { LiveImport } from "./components/LiveImport";
 import { MetaStatus } from "./components/MetaStatus";
 import { Portrait } from "./components/Portrait";
 import { PosSelect } from "./components/PosSelect";
+import { RecentImport } from "./components/RecentImport";
 import { TierPill } from "./components/TierPill";
-import type { LiveMatchResponse } from "./lib/api";
+import type { MatchImportResponse } from "./lib/api";
 
 interface BoardPick {
   id: string;
@@ -98,16 +98,17 @@ export function DraftOracle() {
   const removeB = (side: Side, id: string) =>
     updateSide(side, (arr) => arr.filter((x) => x.id !== id));
 
-  const importLive = (match: LiveMatchResponse) => {
-    const toPicks = (slugs: string[]): BoardPick[] =>
-      slugs
-        .filter((id) => HERO_BY_ID[id])
+  const importMatch = (match: MatchImportResponse) => {
+    // Build board picks (hero + role) for one side, from the match's player list.
+    const sidePicks = (radiantSide: boolean): BoardPick[] =>
+      match.players
+        .filter((p) => p.hero && HERO_BY_ID[p.hero] && p.is_radiant === radiantSide)
         .slice(0, 5)
-        .map((id) => ({ id, pos: null }));
+        .map((p) => ({ id: p.hero as string, pos: (p.position as Role | null) ?? null }));
     // null or true → treat radiant as the ally side; false → ally is dire.
     const allyRadiant = match.searched_is_radiant !== false;
-    setTeam(toPicks(allyRadiant ? match.radiant : match.dire));
-    setEnemy(toPicks(allyRadiant ? match.dire : match.radiant));
+    setTeam(sidePicks(allyRadiant));
+    setEnemy(sidePicks(!allyRadiant));
     setShowBoard(false);
   };
 
@@ -282,8 +283,8 @@ export function DraftOracle() {
           )}
         </Card>
 
-        {/* LIVE IMPORT */}
-        <LiveImport onImport={importLive} />
+        {/* MATCH IMPORT */}
+        <RecentImport onImport={importMatch} />
 
         {/* DRAFT BOARD */}
         <Card>

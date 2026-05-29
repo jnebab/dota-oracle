@@ -1,22 +1,18 @@
 import { useMutation } from "@tanstack/react-query";
-import { Radio } from "lucide-react";
+import { Download } from "lucide-react";
 import { useState } from "react";
-import { type LiveMatchResponse, getLive } from "../lib/api";
+import { type MatchImportResponse, getRecentMatch } from "../lib/api";
 
-interface LiveImportProps {
-  onImport: (match: LiveMatchResponse) => void;
+interface RecentImportProps {
+  onImport: (match: MatchImportResponse) => void;
 }
 
-const fmtTime = (s: number) => {
-  const sign = s < 0 ? "-" : "";
-  const a = Math.abs(s);
-  return `${sign}${Math.floor(a / 60)}:${String(a % 60).padStart(2, "0")}`;
-};
+const fmtTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
-export function LiveImport({ onImport }: LiveImportProps) {
+export function RecentImport({ onImport }: RecentImportProps) {
   const [handle, setHandle] = useState("");
   const mutation = useMutation({
-    mutationFn: (h: string) => getLive(h),
+    mutationFn: (h: string) => getRecentMatch(h),
     onSuccess: onImport,
   });
 
@@ -32,12 +28,12 @@ export function LiveImport({ onImport }: LiveImportProps) {
       style={{ background: "rgba(15,18,23,.65)", border: "1px solid rgba(255,255,255,.07)" }}
     >
       <div className="mb-2 flex items-center gap-2">
-        <Radio size={14} color="#8f9cf2" />
+        <Download size={14} color="#8f9cf2" />
         <span
           className="oracle-display fs11 uppercase tracking-widest"
           style={{ color: "#6b7280" }}
         >
-          Live import — autofill the board from a live game
+          Import last match — autofill the board from a recent game
         </span>
       </div>
       <form onSubmit={submit} className="flex flex-wrap items-center gap-2">
@@ -58,7 +54,7 @@ export function LiveImport({ onImport }: LiveImportProps) {
           className="oracle-display fs11 rounded-md px-3 py-1.5 tracking-wide disabled:opacity-50"
           style={{ color: "#0b0d10", background: "#8f9cf2" }}
         >
-          {mutation.isPending ? "Pulling…" : "Pull live game"}
+          {mutation.isPending ? "Importing…" : "Import last match"}
         </button>
       </form>
       {mutation.isError && (
@@ -68,12 +64,14 @@ export function LiveImport({ onImport }: LiveImportProps) {
       )}
       {mutation.isSuccess && (
         <p className="fs11 mt-2" style={{ color: "#a9b0f2" }}>
-          Imported live game · {fmtTime(mutation.data.game_time)} on the clock — board filled below.
+          Imported match {mutation.data.match_id ?? ""} · {fmtTime(mutation.data.duration_seconds)}{" "}
+          long — both lineups dropped on the board below.
         </p>
       )}
       <p className="fs10 mt-2 italic" style={{ color: "#566070" }}>
-        Pulls the player's current match from STRATZ and drops both lineups onto the board. Requires
-        the backend + STRATZ token; if the player isn't in a live game you'll get a friendly notice.
+        Pulls the player's most recent finished match from STRATZ and fills both lineups (with
+        roles). STRATZ has no live-game feed for normal pubs, so we use the last match. Requires the
+        backend + STRATZ token.
       </p>
     </section>
   );

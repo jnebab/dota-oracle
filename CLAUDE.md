@@ -39,9 +39,13 @@ each pick. It can also pull a *live* game off STRATZ by username or SteamID and 
 ## Key flows
 - **Recommend** (client-only): `scoreHero(candidate, team, enemy, bracketFactor)` = meta tier weight
   + hard-counters (±) + kit-tag edges + synergy + bracketFit (full ≤Archon, half Legend/Ancient, none Divine+).
-- **Live track**: `GET /api/live/{handle}` → resolve handle (SteamID64 → 32-bit via `id - 76561197960265728`,
-  or name → OpenDota `/search`) → STRATZ GraphQL `player(steamAccountId).liveMatch` (Bearer token) →
-  return `{ radiant[], dire[], positions, gameTime }` → client maps onto board → engine re-scores.
+- **Match import**: `GET /api/recent/{handle}` → resolve handle (SteamID64 → 32-bit via
+  `id - 76561197960265728`, or name → OpenDota `/search`) → STRATZ GraphQL
+  `player(steamAccountId).matches(request:{take:1})` (Bearer token) → return
+  `{ radiant[], dire[], players(+position→role), durationSeconds }` → client maps onto board → engine re-scores.
+  > NOTE: STRATZ has **no per-player live-match lookup** — `player.liveMatch` doesn't exist, and the
+  > top-level `live` query only covers watch-listed pro/league games. So we import the player's most
+  > recent finished match (universal + reliable) rather than a true live game.
 - **Meta refresh** (Vercel Cron, daily): pull hero winrates by patch+bracket → compute tiers → store
   snapshot → served via `GET /api/meta?patch=&bracket=`. Replaces hand-tuned tiers; the **bracket overlay stays**.
 
