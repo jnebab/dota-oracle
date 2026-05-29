@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { Fragment, type ReactNode, useMemo, useState } from "react";
 import { HeroPicker } from "./components/HeroPicker";
+import { MetaStatus } from "./components/MetaStatus";
 import { Portrait } from "./components/Portrait";
 import { PosSelect } from "./components/PosSelect";
 import { TierPill } from "./components/TierPill";
@@ -148,6 +149,9 @@ export function DraftOracle() {
               Picks from <span style={{ color: "#c79a45" }}>your hero pool</span> for{" "}
               <span style={{ color: "#c79a45" }}>your role</span> · weighted by 7.41c meta
             </p>
+          </div>
+          <div className="ml-auto">
+            <MetaStatus />
           </div>
         </header>
 
