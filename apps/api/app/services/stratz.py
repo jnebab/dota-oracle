@@ -51,12 +51,15 @@ async def fetch_live_match(account_id: int) -> dict | None:
     payload = {"query": LIVE_MATCH_QUERY, "variables": {"id": account_id}}
     async with httpx.AsyncClient(timeout=15.0) as client:
         res = await client.post(STRATZ_URL, json=payload, headers=headers)
-        res.raise_for_status()
-        try:
-            body = res.json()
-        except ValueError as exc:  # non-JSON body (e.g. HTML error page)
-            snippet = res.text[:200]
-            raise StratzError(f"STRATZ returned a non-JSON response: {snippet!r}") from exc
+
+    # Surface the upstream body on HTTP errors (STRATZ explains 400s in the body).
+    if res.status_code >= 400:
+        raise StratzError(f"STRATZ HTTP {res.status_code}: {res.text[:400]}")
+
+    try:
+        body = res.json()
+    except ValueError as exc:  # non-JSON body (e.g. HTML error page)
+        raise StratzError(f"STRATZ returned a non-JSON response: {res.text[:200]!r}") from exc
 
     # Surface GraphQL-level errors (e.g. wrong field names) instead of silently
     # treating them as "no live match".
