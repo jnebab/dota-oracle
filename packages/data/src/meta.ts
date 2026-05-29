@@ -1,0 +1,46 @@
+import type { MetaTier, Tier } from "./types";
+
+/** Tier → score weight used by the engine. */
+export const TIERW: Record<Tier, number> = { S: 3, A: 2, B: 1, C: -0.5, D: -1.5 };
+
+/**
+ * 7.41c carry-meta read (hand-tuned from DotaBuff / Dota2ProTracker / patch coverage).
+ * M5 swaps this for an auto-refreshed snapshot; the bracket overlay stays.
+ */
+export const META: Record<string, MetaTier> = {
+  spectre: {
+    tier: "S",
+    note: "patch's standout winner — calmer early game lets her farm & scale (~55% WR)",
+  },
+  "wraith-king": { tier: "S", note: "one of the highest win rates this patch (~54%)" },
+  "faceless-void": {
+    tier: "A",
+    note: "most-picked carry; Battlefury + Aghs Chrono build (~53%)",
+  },
+  "drow-ranger": { tier: "A", note: "benefited from the slower tempo (~53.5% WR)" },
+  juggernaut: { tier: "A", note: "strong lane, healing ward + Omnislash pickoffs" },
+  sniper: { tier: "A", note: "back in the meta — easier after mobility-hero nerfs" },
+  "phantom-assassin": { tier: "B", note: "reliable single-target pickoff carry" },
+  kez: { tier: "B", note: "viable agi carry, limited high-MMR data" },
+  "shadow-fiend": { tier: "C", note: "niche as a pos-1 this patch" },
+  necrophos: { tier: "C", note: "off-meta as a hard carry" },
+  slark: { tier: "S", note: "top-tier high-tempo durability, innate-driven" },
+  lifestealer: { tier: "S", note: "%-based damage + magic immunity, dominant" },
+  "phantom-lancer": { tier: "A", note: "niche but strong after the tempo nerfs" },
+  terrorblade: { tier: "A", note: "high win rate (~57%) this patch" },
+  "chaos-knight": { tier: "A", note: "Chaos Strike buffs delete squishies" },
+  ursa: { tier: "A", note: "topped pos-1 win rate earlier in 7.41" },
+  meepo: { tier: "A", note: "snowballs hard if you can pilot him" },
+  "naga-siren": { tier: "A", note: "elite farmer + Song teamfight control" },
+  medusa: { tier: "B", note: "tanky scaler, but mana-burn vulnerable" },
+  morphling: { tier: "B", note: "flexible, very skill-intensive" },
+  luna: { tier: "B", note: "fast farmer, cleave teamfights" },
+  riki: { tier: "B", note: "pickoff carry, niche" },
+  clinkz: { tier: "B", note: "burst pickoff carry" },
+  "troll-warlord": { tier: "B", note: "bullies the lane, falls off late" },
+  alchemist: { tier: "D", note: "gutted by gold/sustain nerfs" },
+  "lone-druid": { tier: "D", note: "heavy nerfs, fell off hard" },
+  "anti-mage": { tier: "D", note: "too slow for the 7.41c tempo" },
+  "templar-assassin": { tier: "C", note: "underwhelming this patch" },
+  sven: { tier: "B", note: "huge Cleave crits + God's Strength; a pub wrecking ball" },
+};
