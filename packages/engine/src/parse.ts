@@ -115,6 +115,9 @@ const FUZZY_STOPWORDS = new Set([
   "undoings",
   "undertow",
   "undertows",
+  "abandon", // a Dota leaver term, not Abaddon
+  "abandons",
+  "abandoned",
 ]);
 
 /**

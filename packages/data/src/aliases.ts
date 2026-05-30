@@ -26,7 +26,7 @@ const CURATED: Record<string, string[]> = {
   "ancient-apparition": ["aa"],
   "legion-commander": ["lc", "legion"],
   "night-stalker": ["ns"],
-  "troll-warlord": ["troll"],
+  "troll-warlord": ["troll", "warlord"],
   "monkey-king": ["mk"],
   "dragon-knight": ["dk"],
   "witch-doctor": ["wd"],

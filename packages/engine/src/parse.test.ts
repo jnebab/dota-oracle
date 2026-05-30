@@ -84,6 +84,11 @@ describe("parseHeroes", () => {
     expect(parseHeroes("we have juggernaut and donbreaker")).toEqual(["juggernaut", "dawnbreaker"]);
   });
 
+  it("resolves 'warlord' to Troll Warlord, not warlock", () => {
+    expect(parseHeroes("warlord")).toEqual(["troll-warlord"]);
+    expect(parseHeroes("abandon")).toEqual([]); // leaver term, not Abaddon
+  });
+
   it("does not match ordinary words or chat to heroes (false-positive guard)", () => {
     // Words that previously mis-resolved when short hero names were fuzzy targets.
     const nonHeroes = [
