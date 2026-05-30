@@ -35,6 +35,20 @@ describe("parseHeroes", () => {
     expect(parseHeroes("keeper of the light")).toEqual(["keeper-of-the-light"]);
   });
 
+  it("auto-generates unambiguous first-word and initials aliases", () => {
+    expect(parseHeroes("ember")).toEqual(["ember-spirit"]);
+    expect(parseHeroes("storm")).toEqual(["storm-spirit"]);
+    expect(parseHeroes("wraith")).toEqual(["wraith-king"]);
+    expect(parseHeroes("ck")).toEqual(["chaos-knight"]);
+    expect(parseHeroes("qop")).toEqual(["queen-of-pain"]);
+  });
+
+  it("drops ambiguous generated aliases (wrong-hero safety)", () => {
+    expect(parseHeroes("shadow")).toEqual([]); // fiend / demon / shaman
+    expect(parseHeroes("es")).toEqual([]); // earth spirit + ember spirit
+    expect(parseHeroes("am")).toEqual([]); // stopword, not anti-mage
+  });
+
   it("handles speech-to-text homophones and spacing", () => {
     expect(parseHeroes("clockwork")).toEqual(["clockwerk"]);
     expect(parseHeroes("clock")).toEqual(["clockwerk"]);
