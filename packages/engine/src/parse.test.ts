@@ -11,7 +11,20 @@ describe("parseHeroes", () => {
   });
 
   it("resolves common nicknames", () => {
-    expect(parseHeroes("PA void AM")).toEqual(["phantom-assassin", "faceless-void", "anti-mage"]);
+    expect(parseHeroes("PA void QoP")).toEqual([
+      "phantom-assassin",
+      "faceless-void",
+      "queen-of-pain",
+    ]);
+  });
+
+  it("matches anti-mage by name (no ambiguous 'am' alias)", () => {
+    expect(parseHeroes("anti mage")).toEqual(["anti-mage"]);
+  });
+
+  it("does not treat the filler word 'am' as a hero", () => {
+    expect(parseHeroes("I am thinking we draft sniper")).toEqual(["sniper"]);
+    expect(parseHeroes("am I right")).toEqual([]);
   });
 
   it("prefers the longest phrase (faceless void, not void)", () => {
@@ -20,6 +33,16 @@ describe("parseHeroes", () => {
 
   it("handles the longest hero name", () => {
     expect(parseHeroes("keeper of the light")).toEqual(["keeper-of-the-light"]);
+  });
+
+  it("handles speech-to-text homophones and spacing", () => {
+    expect(parseHeroes("clockwork")).toEqual(["clockwerk"]);
+    expect(parseHeroes("clock")).toEqual(["clockwerk"]);
+    expect(parseHeroes("rubik")).toEqual(["rubick"]);
+    expect(parseHeroes("life stealer")).toEqual(["lifestealer"]);
+    expect(parseHeroes("ls")).toEqual(["lifestealer"]);
+    // The real one-word name still works too.
+    expect(parseHeroes("lifestealer")).toEqual(["lifestealer"]);
   });
 
   it("de-duplicates repeated heroes", () => {

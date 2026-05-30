@@ -39,3 +39,4 @@ export const synergiesSchema = byHeroId(z.array(z.string()));
 export const metaSchema = byHeroId(metaTierSchema);
 export const bracketFitMapSchema = byHeroId(bracketFitSchema);
 export const buildsSchema = byHeroId(buildSchema);
+export const aliasesSchema = byHeroId(z.array(z.string()));

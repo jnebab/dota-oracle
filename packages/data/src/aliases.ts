@@ -1,8 +1,11 @@
-// Common spoken nicknames → hero id, for the speech-to-text board dictation.
-// Keys are hero ids (slugs). Only unambiguous aliases — full hero names are
-// matched automatically by the parser, so these are extras.
+// Spoken nicknames + speech-to-text homophones/spacings → hero id, for the
+// board dictation feature. Keys are hero ids (slugs). Full hero names are
+// matched automatically by the parser; these cover nicknames and the ways
+// speech-to-text commonly mis-hears or re-spells a name (e.g. "clockwork" for
+// Clockwerk, "rubik" for Rubick, "life stealer" split into two words).
+// validateData() asserts every key is a real hero id.
 export const HERO_ALIASES: Record<string, string[]> = {
-  "anti-mage": ["am"],
+  "anti-mage": ["antimage"],
   "phantom-assassin": ["pa"],
   "wraith-king": ["wk", "skeleton king"],
   "shadow-fiend": ["sf", "nevermore"],
@@ -12,9 +15,9 @@ export const HERO_ALIASES: Record<string, string[]> = {
   "drow-ranger": ["drow"],
   "templar-assassin": ["ta"],
   "phantom-lancer": ["pl"],
-  "outworld-destroyer": ["od"],
-  "nature-s-prophet": ["np", "furion"],
-  "vengeful-spirit": ["vs"],
+  "outworld-destroyer": ["od", "outworld devourer"],
+  "nature-s-prophet": ["np", "furion", "natures prophet"],
+  "vengeful-spirit": ["vs", "venge"],
   "centaur-warrunner": ["centaur"],
   "spirit-breaker": ["bara"],
   "nyx-assassin": ["nyx"],
@@ -28,12 +31,18 @@ export const HERO_ALIASES: Record<string, string[]> = {
   "witch-doctor": ["wd"],
   "skywrath-mage": ["skywrath", "sky"],
   "treant-protector": ["treant"],
-  broodmother: ["brood"],
+  "naga-siren": ["naga"],
+  windranger: ["wind ranger"],
+  clinkz: ["clinks"],
+  clockwerk: ["clock", "clockwork"],
+  rubick: ["rubik"],
+  lifestealer: ["ls", "life stealer", "naix"],
+  broodmother: ["brood", "brood mother"],
   "lone-druid": ["ld"],
   "arc-warden": ["arc"],
   "primal-beast": ["primal"],
   necrophos: ["necro"],
-  timbersaw: ["timber"],
-  bristleback: ["bristle"],
+  timbersaw: ["timber", "timber saw"],
+  bristleback: ["bristle", "bristle back"],
   io: ["wisp"],
 };

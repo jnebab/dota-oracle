@@ -10,12 +10,14 @@ export * from "./bracket";
 export * from "./builds";
 export * from "./aliases";
 
+import { HERO_ALIASES } from "./aliases";
 import { BRACKET_FIT } from "./bracket";
 import { CORE_BUILDS } from "./builds";
 import { COUNTERS } from "./counters";
 import { HEROES } from "./heroes";
 import { META } from "./meta";
 import {
+  aliasesSchema,
   bracketFitMapSchema,
   buildsSchema,
   countersSchema,
@@ -39,6 +41,7 @@ export function validateData(): void {
   metaSchema.parse(META);
   bracketFitMapSchema.parse(BRACKET_FIT);
   buildsSchema.parse(CORE_BUILDS);
+  aliasesSchema.parse(HERO_ALIASES);
 
   const ids = new Set(HEROES.map((h) => h.id));
   const assertId = (id: string, where: string) => {
@@ -56,4 +59,5 @@ export function validateData(): void {
   for (const id of Object.keys(META)) assertId(id, "META key");
   for (const id of Object.keys(BRACKET_FIT)) assertId(id, "BRACKET_FIT key");
   for (const id of Object.keys(CORE_BUILDS)) assertId(id, "CORE_BUILDS key");
+  for (const id of Object.keys(HERO_ALIASES)) assertId(id, "HERO_ALIASES key");
 }

@@ -7,6 +7,12 @@ import { useEffect, useRef, useState } from "react";
 interface SpeechAlternative {
   transcript: string;
 }
+interface SpeechResultEvent {
+  results: ArrayLike<ArrayLike<SpeechAlternative>>;
+}
+interface SpeechErrorEvent {
+  error: string;
+}
 interface SpeechRecognitionLike {
   lang: string;
   interimResults: boolean;
@@ -14,8 +20,9 @@ interface SpeechRecognitionLike {
   maxAlternatives: number;
   start(): void;
   stop(): void;
-  onresult: ((e: { results: ArrayLike<ArrayLike<SpeechAlternative>> }) => void) | null;
-  onerror: ((e: { error: string }) => void) | null;
+  abort(): void;
+  onresult: ((e: SpeechResultEvent) => void) | null;
+  onerror: ((e: SpeechErrorEvent) => void) | null;
   onend: (() => void) | null;
 }
 type RecognitionCtor = new () => SpeechRecognitionLike;
@@ -27,6 +34,14 @@ function recognitionCtor(): RecognitionCtor | null {
   };
   return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 }
+
+const ERROR_TEXT: Record<string, string> = {
+  "not-allowed": "Mic permission denied — allow microphone access",
+  "service-not-allowed": "Mic permission denied — allow microphone access",
+  "no-speech": "Didn't catch that — tap and try again",
+  "audio-capture": "No microphone found",
+  network: "Network error reaching the speech service",
+};
 
 interface MicDictateProps {
   targetLabel: string;
@@ -40,21 +55,40 @@ export function MicDictate({ targetLabel, accent, onHeroes }: MicDictateProps) {
   const [feedback, setFeedback] = useState<string | null>(null);
   const recRef = useRef<SpeechRecognitionLike | null>(null);
 
-  // Stop recognition if the component unmounts mid-listen.
-  useEffect(() => {
-    return () => recRef.current?.stop();
-  }, []);
+  // Tear down any active recognition cleanly (used on replace + unmount).
+  const teardown = () => {
+    const rec = recRef.current;
+    if (rec) {
+      rec.onresult = null;
+      rec.onerror = null;
+      rec.onend = null;
+      rec.abort();
+      recRef.current = null;
+    }
+  };
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: teardown is stable for our use
+  useEffect(() => teardown, []);
 
   const start = () => {
     const Ctor = recognitionCtor();
     if (!Ctor) return;
+
+    // Abort any in-flight recognition before starting a fresh one so an
+    // orphaned instance can't fire callbacks and flip state out of band.
+    teardown();
+
     const rec = new Ctor();
     rec.lang = "en-US";
     rec.interimResults = false;
     rec.continuous = false;
     rec.maxAlternatives = 1;
 
+    // Guard: only the instance that is still current may touch state.
+    const isCurrent = () => recRef.current === rec;
+
     rec.onresult = (e) => {
+      if (!isCurrent()) return;
       const transcript = e.results[0]?.[0]?.transcript ?? "";
       const ids = parseHeroes(transcript);
       if (ids.length > 0) {
@@ -66,13 +100,15 @@ export function MicDictate({ targetLabel, accent, onHeroes }: MicDictateProps) {
       }
     };
     rec.onerror = (e) => {
-      setFeedback(
-        e.error === "not-allowed"
-          ? "Mic permission denied — allow microphone access"
-          : `Mic error: ${e.error}`,
-      );
+      if (!isCurrent()) return;
+      if (e.error === "aborted") return; // expected on manual stop/replace
+      setFeedback(ERROR_TEXT[e.error] ?? `Mic error: ${e.error}`);
     };
-    rec.onend = () => setListening(false);
+    rec.onend = () => {
+      if (!isCurrent()) return;
+      setListening(false);
+      recRef.current = null;
+    };
 
     recRef.current = rec;
     setFeedback(null);
@@ -84,13 +120,16 @@ export function MicDictate({ targetLabel, accent, onHeroes }: MicDictateProps) {
 
   if (!supported) {
     return (
-      <span
+      <button
+        type="button"
+        disabled
         className="fs10 italic"
-        style={{ color: "#566070" }}
-        title="Try Chrome, Edge, or Android"
+        style={{ color: "#566070", background: "transparent", border: "none", cursor: "default" }}
+        aria-label="Voice input is not supported in this browser; try Chrome, Edge, or Android"
+        title="Try Chrome, Edge, or Android Chrome"
       >
         🎤 voice input needs Chrome/Edge
-      </span>
+      </button>
     );
   }
 
@@ -99,6 +138,10 @@ export function MicDictate({ targetLabel, accent, onHeroes }: MicDictateProps) {
       <button
         type="button"
         onClick={listening ? stop : start}
+        aria-pressed={listening}
+        aria-label={
+          listening ? "Stop dictating heroes" : `Dictate heroes into ${targetLabel} by voice`
+        }
         className="oracle-display fs11 flex items-center gap-1 rounded-md px-2.5 py-1.5 tracking-wide"
         style={{
           color: listening ? "#0b0d10" : accent,
@@ -110,11 +153,9 @@ export function MicDictate({ targetLabel, accent, onHeroes }: MicDictateProps) {
         {listening ? <MicOff size={13} /> : <Mic size={13} />}
         {listening ? "Listening…" : "Dictate"}
       </button>
-      {feedback && (
-        <span className="fs10 italic" style={{ color: "#9aa1ad" }}>
-          {feedback}
-        </span>
-      )}
+      <output aria-live="polite" className="fs10 italic" style={{ color: "#9aa1ad" }}>
+        {feedback}
+      </output>
     </div>
   );
 }
