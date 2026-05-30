@@ -77,14 +77,82 @@ describe("parseHeroes", () => {
     expect(parseHeroes("rubik")).toEqual(["rubick"]);
     expect(parseHeroes("invokr")).toEqual(["invoker"]);
     expect(parseHeroes("spectr")).toEqual(["spectre"]);
+    expect(parseHeroes("lifestealr")).toEqual(["lifestealer"]);
   });
 
   it("fuzzy-matches within a sentence after exact matches", () => {
     expect(parseHeroes("we have juggernaut and donbreaker")).toEqual(["juggernaut", "dawnbreaker"]);
   });
 
-  it("does not fuzzy-match unrelated words to heroes", () => {
-    expect(parseHeroes("the enemy team looks strong")).toEqual([]);
-    expect(parseHeroes("i think we should push")).toEqual([]);
+  it("does not match ordinary words or chat to heroes (false-positive guard)", () => {
+    // Words that previously mis-resolved when short hero names were fuzzy targets.
+    const nonHeroes = [
+      "the",
+      "enemy",
+      "team",
+      "push",
+      "carry",
+      "support",
+      "roshan",
+      "gank",
+      "tower",
+      "stack",
+      "smoke",
+      "jungle",
+      "creep",
+      "tempo",
+      "fight",
+      "report",
+      "reported",
+      "please",
+      "really",
+      "strong",
+      "feeding",
+      "rotate",
+      "defend",
+      "missing",
+      "aegis",
+      "cheese",
+      "buyback",
+      "comeback",
+      "barracks",
+      "judge",
+      "budge",
+      "nudge",
+      "fudge",
+      "finger",
+      "ringer",
+      "singer",
+      "thinker",
+      "tanker",
+      "banker",
+      "ticket",
+      "winner",
+      "miracle",
+      "beaver",
+      "slaver",
+      "spider",
+      "sliver",
+      "cargo",
+      "larger",
+      "teaches",
+      "teacher",
+      "magnets",
+      "marcia",
+      "martha",
+      "raiser",
+      "blinks",
+      "slacks",
+      "wiper",
+      "undoing",
+      "undertow",
+      "should",
+      "very",
+      "good",
+      "jungle",
+    ];
+    for (const word of nonHeroes) {
+      expect(parseHeroes(word), `"${word}" should match no hero`).toEqual([]);
+    }
   });
 });

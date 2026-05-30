@@ -90,13 +90,15 @@ function index(): PhraseIndex {
     add(h.name, h.id);
     for (const alias of HERO_ALIASES[h.id] ?? []) add(alias, h.id);
   }
-  // Fuzzy targets: single-word hero names only (≥5 chars). Restricting to real
-  // names — not shorthand aliases like "ember"/"spirit" — keeps approximate
-  // matches high-precision.
+  // Fuzzy targets: single-word hero names of >=7 chars only. Real names (not
+  // shorthand aliases) keep matches meaningful; the length floor excludes the
+  // short names (tinker, pudge, oracle, sniper, weaver, razor, largo, magnus,
+  // viper, slark, marci, medusa…) that are edit-distance-close to many ordinary
+  // words and would drive false positives.
   const fuzzy: FuzzyCand[] = [];
   for (const h of HEROES) {
     const name = tokenize(h.name).join(" ");
-    if (!name.includes(" ") && name.length >= 5) {
+    if (!name.includes(" ") && name.length >= 7) {
       fuzzy.push({ phrase: name, id: h.id, sdx: soundex(name) });
     }
   }
@@ -104,26 +106,39 @@ function index(): PhraseIndex {
   return INDEX;
 }
 
+// Ordinary words that slip past the first-letter + distance gates and sound
+// like a long hero name. Cheap denylist to keep them from matching.
+const FUZZY_STOPWORDS = new Set([
+  "teaches",
+  "teacher",
+  "undoing",
+  "undoings",
+  "undertow",
+  "undertows",
+]);
+
 /**
- * Approximate-match a leftover token to a single-word hero name.
- * Accepts a near edit-distance match, or a Soundex (sounds-like) match, but
- * only when exactly one hero is the unambiguous best — otherwise returns null.
+ * Approximate-match a leftover token to a single-word hero name (>=7 chars).
+ * Requires a matching first letter, then accepts a near edit-distance match
+ * (<=2) or a Soundex "sounds-like" match (distance <=3, similar length). Only
+ * an unambiguous single best hero is returned — ties yield null.
  */
 function fuzzyMatch(token: string, fuzzy: FuzzyCand[]): string | null {
-  if (token.length < 4) return null;
+  if (token.length < 5 || FUZZY_STOPWORDS.has(token)) return null;
   const tsx = soundex(token);
-  const closeThreshold = token.length < 6 ? 1 : 2;
+  const head = token[0];
   let bestId: string | null = null;
   let bestDist = Number.POSITIVE_INFINITY;
   let tie = false;
   for (const cand of fuzzy) {
-    const d = levenshtein(token, cand.phrase, 4);
+    if (cand.phrase[0] !== head) continue; // must share the first letter
+    const d = levenshtein(token, cand.phrase, 3);
     const accept =
-      d <= closeThreshold ||
+      d <= 2 ||
       (tsx !== "" &&
         tsx === cand.sdx &&
         Math.abs(token.length - cand.phrase.length) <= 3 &&
-        d <= 4);
+        d <= 3);
     if (!accept) continue;
     if (d < bestDist) {
       bestDist = d;
