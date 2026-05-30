@@ -10,9 +10,68 @@ function tokenize(text: string): string[] {
     .filter(Boolean);
 }
 
+/** Capped Levenshtein edit distance. Returns cap+1 once it provably exceeds cap. */
+function levenshtein(a: string, b: string, cap: number): number {
+  const al = a.length;
+  const bl = b.length;
+  if (Math.abs(al - bl) > cap) return cap + 1;
+  let prev = new Int32Array(bl + 1);
+  let cur = new Int32Array(bl + 1);
+  for (let j = 0; j <= bl; j++) prev[j] = j;
+  for (let i = 1; i <= al; i++) {
+    cur[0] = i;
+    let rowMin = i;
+    const ac = a.charCodeAt(i - 1);
+    for (let j = 1; j <= bl; j++) {
+      const cost = ac === b.charCodeAt(j - 1) ? 0 : 1;
+      // Indices are always in range; the ?? 0 only satisfies the type-checker.
+      const v = Math.min((prev[j] ?? 0) + 1, (cur[j - 1] ?? 0) + 1, (prev[j - 1] ?? 0) + cost);
+      cur[j] = v;
+      if (v < rowMin) rowMin = v;
+    }
+    if (rowMin > cap) return cap + 1;
+    const tmp = prev;
+    prev = cur;
+    cur = tmp;
+  }
+  return prev[bl] ?? 0;
+}
+
+/** Soundex phonetic key (catches "sounds-like" mishearings, e.g. tekis≈techies). */
+function soundex(s: string): string {
+  const u = s.toUpperCase().replace(/[^A-Z]/g, "");
+  if (!u) return "";
+  const code = (c: string): string => {
+    if ("BFPV".includes(c)) return "1";
+    if ("CGJKQSXZ".includes(c)) return "2";
+    if ("DT".includes(c)) return "3";
+    if (c === "L") return "4";
+    if ("MN".includes(c)) return "5";
+    if (c === "R") return "6";
+    return "0"; // vowels, H, W, Y
+  };
+  const first = u[0] ?? "";
+  let out = first;
+  let prevCode = code(first);
+  for (let i = 1; i < u.length && out.length < 4; i++) {
+    const c = u[i] ?? "";
+    const d = code(c);
+    if (d !== "0" && d !== prevCode) out += d;
+    if (c !== "H" && c !== "W") prevCode = d; // H/W are transparent; vowels reset
+  }
+  return `${out}000`.slice(0, 4);
+}
+
+interface FuzzyCand {
+  phrase: string;
+  id: string;
+  sdx: string;
+}
+
 interface PhraseIndex {
   byPhrase: Map<string, string>; // normalized phrase → hero id
   maxWords: number;
+  fuzzy: FuzzyCand[]; // single-word hero names (len ≥ 5) for approximate matching
 }
 
 let INDEX: PhraseIndex | null = null;
@@ -31,20 +90,70 @@ function index(): PhraseIndex {
     add(h.name, h.id);
     for (const alias of HERO_ALIASES[h.id] ?? []) add(alias, h.id);
   }
-  INDEX = { byPhrase, maxWords };
+  // Fuzzy targets: single-word hero names only (≥5 chars). Restricting to real
+  // names — not shorthand aliases like "ember"/"spirit" — keeps approximate
+  // matches high-precision.
+  const fuzzy: FuzzyCand[] = [];
+  for (const h of HEROES) {
+    const name = tokenize(h.name).join(" ");
+    if (!name.includes(" ") && name.length >= 5) {
+      fuzzy.push({ phrase: name, id: h.id, sdx: soundex(name) });
+    }
+  }
+  INDEX = { byPhrase, maxWords, fuzzy };
   return INDEX;
 }
 
 /**
+ * Approximate-match a leftover token to a single-word hero name.
+ * Accepts a near edit-distance match, or a Soundex (sounds-like) match, but
+ * only when exactly one hero is the unambiguous best — otherwise returns null.
+ */
+function fuzzyMatch(token: string, fuzzy: FuzzyCand[]): string | null {
+  if (token.length < 4) return null;
+  const tsx = soundex(token);
+  const closeThreshold = token.length < 6 ? 1 : 2;
+  let bestId: string | null = null;
+  let bestDist = Number.POSITIVE_INFINITY;
+  let tie = false;
+  for (const cand of fuzzy) {
+    const d = levenshtein(token, cand.phrase, 4);
+    const accept =
+      d <= closeThreshold ||
+      (tsx !== "" &&
+        tsx === cand.sdx &&
+        Math.abs(token.length - cand.phrase.length) <= 3 &&
+        d <= 4);
+    if (!accept) continue;
+    if (d < bestDist) {
+      bestDist = d;
+      bestId = cand.id;
+      tie = false;
+    } else if (d === bestDist && cand.id !== bestId) {
+      tie = true;
+    }
+  }
+  return tie ? null : bestId;
+}
+
+/**
  * Extract hero ids from free-form dictated/typed text, in order of mention.
- * Greedy longest-phrase match so "faceless void" wins over "void", multi-word
- * names ("keeper of the light") resolve, and duplicates are dropped. Pure.
+ * Greedy longest-phrase exact match first (so "faceless void" wins over "void"
+ * and multi-word names resolve), then an approximate fallback per leftover
+ * token to tolerate close mispronunciations (e.g. "donbreaker" → dawnbreaker,
+ * "tekis" → techies). Duplicates are dropped. Pure.
  */
 export function parseHeroes(text: string): string[] {
-  const { byPhrase, maxWords } = index();
+  const { byPhrase, maxWords, fuzzy } = index();
   const words = tokenize(text);
   const ids: string[] = [];
   const seen = new Set<string>();
+  const take = (id: string) => {
+    if (!seen.has(id)) {
+      ids.push(id);
+      seen.add(id);
+    }
+  };
 
   let i = 0;
   while (i < words.length) {
@@ -52,16 +161,20 @@ export function parseHeroes(text: string): string[] {
     for (let n = Math.min(maxWords, words.length - i); n >= 1; n--) {
       const id = byPhrase.get(words.slice(i, i + n).join(" "));
       if (id) {
-        if (!seen.has(id)) {
-          ids.push(id);
-          seen.add(id);
-        }
+        take(id);
         i += n;
         matched = true;
         break;
       }
     }
-    if (!matched) i++;
+    if (!matched) {
+      const word = words[i];
+      if (word) {
+        const fuzzyId = fuzzyMatch(word, fuzzy);
+        if (fuzzyId) take(fuzzyId);
+      }
+      i++;
+    }
   }
   return ids;
 }

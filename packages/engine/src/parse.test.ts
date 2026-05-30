@@ -70,4 +70,21 @@ describe("parseHeroes", () => {
   it("returns nothing for empty input", () => {
     expect(parseHeroes("")).toEqual([]);
   });
+
+  it("tolerates close mispronunciations of single-word names", () => {
+    expect(parseHeroes("donbreaker")).toEqual(["dawnbreaker"]);
+    expect(parseHeroes("tekis")).toEqual(["techies"]);
+    expect(parseHeroes("rubik")).toEqual(["rubick"]);
+    expect(parseHeroes("invokr")).toEqual(["invoker"]);
+    expect(parseHeroes("spectr")).toEqual(["spectre"]);
+  });
+
+  it("fuzzy-matches within a sentence after exact matches", () => {
+    expect(parseHeroes("we have juggernaut and donbreaker")).toEqual(["juggernaut", "dawnbreaker"]);
+  });
+
+  it("does not fuzzy-match unrelated words to heroes", () => {
+    expect(parseHeroes("the enemy team looks strong")).toEqual([]);
+    expect(parseHeroes("i think we should push")).toEqual([]);
+  });
 });
