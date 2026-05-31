@@ -52,3 +52,11 @@ export interface LineupSignals {
 export interface BuildGuide extends Build {
   situational: SituationalItem[];
 }
+
+/**
+ * Empirical hero matchups: `MatchupTable[enemyId][candidateId]` = the candidate's
+ * win-rate advantage vs that enemy as a fraction (e.g. +0.04 = 54% win rate).
+ * Optional input to {@link scoreHero}; when absent the engine uses the bundled
+ * hand-tuned hard counters instead, so it still works offline.
+ */
+export type MatchupTable = Record<string, Record<string, number>>;

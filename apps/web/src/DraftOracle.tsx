@@ -9,6 +9,7 @@ import {
   dotabuffSlug,
 } from "@dota-oracle/data";
 import { type Recommendation, bracketFactorFor, buildGuide, scoreHero } from "@dota-oracle/engine";
+import { useQuery } from "@tanstack/react-query";
 import {
   ChevronDown,
   Coins,
@@ -28,7 +29,7 @@ import { Portrait } from "./components/Portrait";
 import { PosSelect } from "./components/PosSelect";
 import { RecentImport } from "./components/RecentImport";
 import { TierPill } from "./components/TierPill";
-import type { MatchImportResponse } from "./lib/api";
+import { type MatchImportResponse, getMatchups } from "./lib/api";
 
 interface BoardPick {
   id: string;
@@ -134,6 +135,19 @@ export function DraftOracle() {
   };
 
   const bracketFactor = bracketFactorFor(rank);
+
+  // Real win-rate matchups for the enemies on the board (OpenDota, via the API).
+  // Falls back to bundled hand-tuned counters in the engine when unavailable.
+  const enemyIds = enemy.map((x) => x.id);
+  const enemyKey = [...enemyIds].sort().join(",");
+  const { data: matchups } = useQuery({
+    queryKey: ["matchups", enemyKey],
+    queryFn: () => getMatchups(enemyIds),
+    enabled: enemyIds.length > 0,
+    staleTime: 1000 * 60 * 60,
+    retry: false,
+  });
+
   const recs = useMemo<Recommendation[]>(() => {
     const teamHeroes = team
       .map((x) => HERO_BY_ID[x.id])
@@ -147,9 +161,9 @@ export function DraftOracle() {
       .filter((h): h is NonNullable<typeof h> => !!h)
       .filter((h) => h.roles.includes(myRole) && !used.has(h.id));
     return eligible
-      .map((h) => ({ hero: h, ...scoreHero(h, teamHeroes, enemies, bracketFactor) }))
+      .map((h) => ({ hero: h, ...scoreHero(h, teamHeroes, enemies, bracketFactor, matchups) }))
       .sort((a, b) => b.total - a.total || a.hero.name.localeCompare(b.hero.name));
-  }, [poolIds, myRole, team, enemy, bracketFactor]);
+  }, [poolIds, myRole, team, enemy, bracketFactor, matchups]);
 
   const contested = team.some((x) => x.pos === myRole);
 

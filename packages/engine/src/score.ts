@@ -1,13 +1,22 @@
 import { BRACKET_FIT, COUNTERS, type Hero, META, SYNERGIES, TIERW } from "@dota-oracle/data";
 import { EDGE_TEXT, has, tagEdges } from "./tags";
-import type { Reason, ScoreResult } from "./types";
+import type { MatchupTable, Reason, ScoreResult } from "./types";
+
+// Win-rate advantage (fraction) → score weight, capped. 0.05 → 1.0, 0.10 → 2.0.
+const MATCHUP_SCALE = 20;
+const MATCHUP_CAP = 3;
+// Ignore tiny/low-signal edges so reasons stay meaningful.
+const MATCHUP_MIN_WEIGHT = 0.3;
+
+const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
 /**
  * Score a candidate hero for the current draft. Pure and deterministic.
  *
  * total = meta-tier weight
  *       + bracketFit·bracketFactor
- *       + hard-counters (±) vs each enemy
+ *       + matchup advantage vs each enemy (empirical when `matchups` is given,
+ *         else bundled hand-tuned hard counters)
  *       + kit-tag edges (± via {@link tagEdges})
  *       + synergy / setup / mana-aura bonuses with each ally
  */
@@ -16,6 +25,7 @@ export function scoreHero(
   team: Hero[],
   enemies: Hero[],
   bracketFactor = 0,
+  matchups?: MatchupTable,
 ): ScoreResult {
   let total = 0;
   const reasons: Reason[] = [];
@@ -37,13 +47,24 @@ export function scoreHero(
 
   const counters = COUNTERS[cand.id] ?? [];
   for (const e of enemies) {
-    if (counters.includes(e.id)) {
-      total += 3;
-      push(3, `Hard counter vs ${e.name}`);
-    }
-    if ((COUNTERS[e.id] ?? []).includes(cand.id)) {
-      total -= 2.5;
-      push(-2.5, `${e.name} hard-counters you`);
+    const adv = matchups?.[e.id]?.[cand.id];
+    if (adv !== undefined) {
+      // Empirical win-rate matchup replaces the hand-tuned hard-counter pair.
+      const w = clamp(adv * MATCHUP_SCALE, -MATCHUP_CAP, MATCHUP_CAP);
+      if (Math.abs(w) >= MATCHUP_MIN_WEIGHT) {
+        const wr = Math.round((0.5 + adv) * 100);
+        total += w;
+        push(w, adv >= 0 ? `Favored vs ${e.name} (${wr}% WR)` : `Loses to ${e.name} (${wr}% WR)`);
+      }
+    } else {
+      if (counters.includes(e.id)) {
+        total += 3;
+        push(3, `Hard counter vs ${e.name}`);
+      }
+      if ((COUNTERS[e.id] ?? []).includes(cand.id)) {
+        total -= 2.5;
+        push(-2.5, `${e.name} hard-counters you`);
+      }
     }
     for (const ed of tagEdges(cand, e)) {
       total += ed.w;

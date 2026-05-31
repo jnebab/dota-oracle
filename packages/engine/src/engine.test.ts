@@ -53,6 +53,26 @@ describe("scoreHero", () => {
     const b = scoreHero(hero("juggernaut"), [hero("magnus")], [hero("medusa")], 0.5);
     expect(a).toEqual(b);
   });
+
+  it("uses empirical matchups when provided", () => {
+    const enemy = hero("medusa");
+    const cand = hero("juggernaut");
+    const matchups = { [enemy.id]: { [cand.id]: 0.08 } }; // 58% WR for jugg vs medusa
+    const withData = scoreHero(cand, [], [enemy], 0, matchups);
+    const without = scoreHero(cand, [], [enemy], 0);
+    expect(withData.total).toBeGreaterThan(without.total);
+    expect(withData.reasons.some((r) => r.label.includes("Favored vs Medusa"))).toBe(true);
+  });
+
+  it("matchup data overrides the hand-tuned hard counter for that pair", () => {
+    // anti-mage hard-counters medusa in the bundled COUNTERS table.
+    const cand = hero("anti-mage");
+    const enemy = hero("medusa");
+    const matchups = { [enemy.id]: { [cand.id]: -0.06 } }; // empirically unfavored
+    const res = scoreHero(cand, [], [enemy], 0, matchups);
+    expect(res.reasons.some((r) => r.label === "Hard counter vs Medusa")).toBe(false);
+    expect(res.reasons.some((r) => r.label.includes("Loses to Medusa"))).toBe(true);
+  });
 });
 
 describe("tagEdges", () => {

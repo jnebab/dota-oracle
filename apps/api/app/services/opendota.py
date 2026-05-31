@@ -43,6 +43,12 @@ async def fetch_hero_stats() -> list[dict]:
     return data if isinstance(data, list) else []
 
 
+async def fetch_matchups(hero_id: int) -> list[dict]:
+    """This hero's head-to-head record vs every other hero (OpenDota)."""
+    data = await _get(f"/heroes/{hero_id}/matchups")
+    return data if isinstance(data, list) else []
+
+
 def summarize_player(account_id: int, matches: list[dict]) -> PlayerResponse:
     """Aggregate recent matches into an overview + top heroes. Pure / testable."""
     per_hero: dict[int, list[int]] = defaultdict(lambda: [0, 0])  # hero_id -> [games, wins]

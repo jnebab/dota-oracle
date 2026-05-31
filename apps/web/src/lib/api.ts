@@ -59,6 +59,15 @@ export function getPlayer(handle: string): Promise<PlayerResponse> {
   return getJson(`/api/player/${encodeURIComponent(handle)}`, playerResponseSchema);
 }
 
+// { enemySlug: { candidateSlug: advantageFraction } }
+export const matchupTableSchema = z.record(z.string(), z.record(z.string(), z.number()));
+export type MatchupTableResponse = z.infer<typeof matchupTableSchema>;
+
+export function getMatchups(enemySlugs: string[]): Promise<MatchupTableResponse> {
+  const vs = encodeURIComponent(enemySlugs.join(","));
+  return getJson(`/api/matchups?vs=${vs}`, matchupTableSchema);
+}
+
 const matchPlayerSchema = z.object({
   hero_id: z.number(),
   hero: z.string().nullable(),
