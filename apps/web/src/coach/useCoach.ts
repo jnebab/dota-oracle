@@ -59,6 +59,8 @@ function hashContext(c: DraftContext): string {
     a: c.allies.map((x) => `${x.id}:${x.pos ?? ""}`),
     r: c.role,
     k: c.rank,
+    // include threats so the AI brief refreshes when async matchup data lands
+    t: c.threats.map((x) => `${x.id}:${x.severity}`),
   });
 }
 
@@ -130,7 +132,11 @@ export function useCoach(ctx: DraftContext): UseCoachResult {
   const enableAI = useCallback(() => {
     const lm = getLM();
     if (!lm) return;
-    lm.create({ initialPrompts: [{ role: "system", content: COACH_SYSTEM_PROMPT }] })
+    lm.create({
+      initialPrompts: [{ role: "system", content: COACH_SYSTEM_PROMPT }],
+      temperature: 0.3,
+      topK: 3,
+    })
       .then((s) => {
         sessionRef.current = s;
         return detectCapability();

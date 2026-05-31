@@ -1,10 +1,41 @@
 import { HERO_BY_ID } from "@dota-oracle/data";
-import { type Recommendation, scoreHero } from "@dota-oracle/engine";
+import { type LineupSignals, type Recommendation, scoreHero } from "@dota-oracle/engine";
 import { describe, expect, it } from "vitest";
 import { buildContext } from "./context";
 import { parseCoachBrief } from "./parse";
-import { selectModulesRules } from "./rules";
-import type { CoachModule, ModuleId } from "./types";
+import { mandatoryModuleIds, selectModulesRules } from "./rules";
+import type { CoachModule, DraftContext, ModuleId } from "./types";
+
+const NO_SIGNALS: LineupSignals = {
+  magic: 0,
+  phys: 0,
+  tanky: 0,
+  lockdown: 0,
+  evasion: false,
+  illuSummon: false,
+  silence: false,
+  invis: false,
+  heal: 0,
+};
+
+function makeCtx(over: Partial<DraftContext> = {}): DraftContext {
+  return {
+    role: "Carry",
+    rank: "Archon",
+    bracketFactor: 1,
+    topPick: { id: "spectre", name: "Spectre", total: 5, tags: ["physical-dps"], reasons: [] },
+    alternatives: [],
+    allies: [],
+    enemies: [{ id: "x", name: "X", pos: null }],
+    signals: { ...NO_SIGNALS },
+    threats: [],
+    bans: [],
+    synergyAllies: [],
+    contestedRole: false,
+    hasMatchupData: false,
+    ...over,
+  };
+}
 
 const hero = (id: string) => {
   const h = HERO_BY_ID[id];
@@ -123,6 +154,42 @@ describe("parseCoachBrief — validation + safety floor", () => {
 
   it("throws on non-JSON output (caller then falls back)", () => {
     expect(() => parseCoachBrief("the enemy has a lot of magic", magic())).toThrow();
+  });
+
+  it("never drops a mandatory module even past the cap (B1)", () => {
+    // Six mandatory triggers at once: contested role + magic + evasion + tanky + heal + high threat.
+    const ctx = makeCtx({
+      contestedRole: true,
+      signals: { ...NO_SIGNALS, magic: 3, tanky: 3, evasion: true, heal: 3, lockdown: 3 },
+      threats: [{ id: "x", name: "X", severity: "high" }],
+    });
+    const mandatory = mandatoryModuleIds(ctx);
+    expect(mandatory.length).toBeGreaterThan(5);
+    const shown = ids(selectModulesRules(ctx).modules);
+    for (const id of mandatory) expect(shown).toContain(id);
+  });
+
+  it("re-normalizes an AI-demoted mandatory module to high and keeps it (B2)", () => {
+    // Enough eligible non-mandatory modules to fill the cap; AI marks bkb low.
+    const ctx = makeCtx({
+      signals: { ...NO_SIGNALS, magic: 2 },
+      threats: [{ id: "x", name: "X", severity: "med" }],
+      bans: [{ id: "lion", name: "Lion", reason: "counters you" }],
+    });
+    const raw = JSON.stringify({
+      headline: "x",
+      modules: [
+        { id: "bkb-timing", urgency: "low" }, // mandatory, AI tried to bury it
+        { id: "survive-early", urgency: "high" },
+        { id: "comfort-pick", urgency: "high" },
+        { id: "item-plan", urgency: "high" },
+        { id: "threats", urgency: "high" },
+        { id: "ban-warning", urgency: "high" },
+      ],
+    });
+    const brief = parseCoachBrief(raw, ctx);
+    expect(ids(brief.modules)).toContain("bkb-timing");
+    expect(byId(brief.modules, "bkb-timing")?.urgency).toBe("high");
   });
 
   it("tolerates code fences / surrounding prose", () => {

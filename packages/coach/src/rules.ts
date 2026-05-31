@@ -12,16 +12,32 @@ export function mandatoryModuleIds(c: DraftContext): ModuleId[] {
   return MODULE_ORDER.filter((id) => MODULES[id].mandatoryWhen?.(c) ?? false);
 }
 
-/** Order eligible modules by urgency, then catalog priority; cap to MAX_MODULES. */
+/** Stable sort by urgency, then catalog priority. No cap. */
 export function orderModules(modules: CoachModule[]): CoachModule[] {
   const priority = new Map(MODULE_ORDER.map((id, i) => [id, i]));
-  return [...modules]
-    .sort(
-      (a, b) =>
-        URGENCY_RANK[b.urgency] - URGENCY_RANK[a.urgency] ||
-        (priority.get(a.id) ?? 99) - (priority.get(b.id) ?? 99),
-    )
-    .slice(0, MAX_MODULES);
+  return [...modules].sort(
+    (a, b) =>
+      URGENCY_RANK[b.urgency] - URGENCY_RANK[a.urgency] ||
+      (priority.get(a.id) ?? 99) - (priority.get(b.id) ?? 99),
+  );
+}
+
+/**
+ * Apply the safety floor + cap. Mandatory modules are normalized to "high"
+ * urgency and ALWAYS kept (exempt from the cap), so neither the AI nor the cap
+ * can hide a safety-critical module. Non-mandatory modules fill the remaining
+ * slots up to MAX_MODULES.
+ */
+export function finalizeModules(modules: CoachModule[], c: DraftContext): CoachModule[] {
+  const mandatory = new Set<ModuleId>(mandatoryModuleIds(c));
+  const normalized = modules.map((m) =>
+    mandatory.has(m.id) ? { ...m, urgency: "high" as Urgency } : m,
+  );
+  const ordered = orderModules(normalized);
+  const mand = ordered.filter((m) => mandatory.has(m.id));
+  const others = ordered.filter((m) => !mandatory.has(m.id));
+  const room = Math.max(0, MAX_MODULES - mand.length);
+  return orderModules([...mand, ...others.slice(0, room)]);
 }
 
 export function headlineFor(c: DraftContext): string {
@@ -45,5 +61,5 @@ export function selectModulesRules(c: DraftContext): CoachBrief {
     urgency: MODULES[id].baseUrgency(c),
     note: MODULES[id].detail(c),
   }));
-  return { headline: headlineFor(c), modules: orderModules(modules), source: "rules" };
+  return { headline: headlineFor(c), modules: finalizeModules(modules, c), source: "rules" };
 }

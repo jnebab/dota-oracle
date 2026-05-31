@@ -1,10 +1,9 @@
 import { z } from "zod";
 import { MODULES } from "./catalog";
 import {
-  MAX_MODULES,
   eligibleModuleIds,
+  finalizeModules,
   mandatoryModuleIds,
-  orderModules,
   selectModulesRules,
 } from "./rules";
 import type { CoachBrief, CoachModule, DraftContext, ModuleId } from "./types";
@@ -64,5 +63,7 @@ export function parseCoachBrief(raw: string, ctx: DraftContext): CoachBrief {
   if (modules.length === 0) return selectModulesRules(ctx);
 
   const headline = clamp(parsed.headline, 200) || selectModulesRules(ctx).headline;
-  return { headline, modules: orderModules(modules).slice(0, MAX_MODULES), source: "ai" };
+  // finalizeModules normalizes mandatory urgency to high and exempts them from
+  // the cap, so the AI can never demote/hide a safety-critical module.
+  return { headline, modules: finalizeModules(modules, ctx), source: "ai" };
 }
