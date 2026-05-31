@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Draft Oracle — Adaptive Coach · Flow Mockup</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Spectral:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap');
+
+  :root{
+    --bg:#0a0c0f; --panel:rgba(15,18,23,.65); --line:rgba(255,255,255,.08);
+    --ink:#dfe3ea; --muted:#7d8593; --dim:#566070;
+    --gold:#c79a45; --cream:#f0e6cf; --green:#74b13f; --blue:#3f8fd1; --red:#d1463a;
+    --rose:#e8728a; --amber:#e8b54e; --violet:#8f9cf2;
+    --str:#d14b3c; --agi:#74b13f; --int:#3f8fd1; --uni:#c79a45;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:
+      radial-gradient(ellipse 60% 80% at 0% 0%, rgba(116,177,63,.08), transparent 55%),
+      radial-gradient(ellipse 60% 80% at 100% 100%, rgba(209,70,58,.10), transparent 55%),
+      var(--bg);
+    color:var(--ink);font-family:'Spectral',Georgia,serif;line-height:1.5;}
+  .wrap{max-width:1180px;margin:0 auto;padding:34px 22px 90px}
+  .display{font-family:'Cinzel',serif} .mono{font-family:'Space Mono',monospace}
+  h1{font-family:'Cinzel',serif;font-size:30px;letter-spacing:.06em;color:var(--cream);margin:0}
+  .tag{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+  .sub{color:var(--muted);max-width:74ch;margin-top:8px;font-size:14px}
+  .rule{height:1px;background:linear-gradient(90deg,var(--gold),transparent);margin:22px 0;opacity:.5}
+
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin:10px 0 26px;font-family:'Space Mono',monospace;font-size:11px;color:var(--muted)}
+  .legend b{color:var(--ink);font-weight:600}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+
+  .step{margin:40px 0}
+  .step-h{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+  .step-h .n{font-family:'Space Mono',monospace;color:var(--gold);font-size:13px;border:1px solid var(--gold);border-radius:6px;padding:2px 8px}
+  .step-h h2{font-family:'Cinzel',serif;font-size:17px;margin:0;color:var(--cream);letter-spacing:.02em}
+  .step-note{color:var(--muted);font-size:13px;margin:2px 0 14px;font-style:italic}
+
+  /* phone frame */
+  .frames{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+  .frame{flex:1 1 340px;min-width:320px;max-width:520px;border:1px solid var(--line);border-radius:16px;
+    background:linear-gradient(180deg,rgba(17,20,26,.9),rgba(10,12,15,.9));padding:14px;position:relative;
+    box-shadow:0 18px 50px rgba(0,0,0,.4)}
+  .frame .cap{position:absolute;top:-11px;left:14px;font-family:'Space Mono',monospace;font-size:10px;
+    letter-spacing:.14em;text-transform:uppercase;background:var(--bg);border:1px solid var(--line);
+    color:var(--muted);padding:2px 8px;border-radius:5px}
+
+  /* app header */
+  .apphead{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+  .logo{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#c79a45,#8a6a26);
+    display:flex;align-items:center;justify-content:center;color:#0b0d10;font-weight:700;font-size:15px}
+  .apphead .t{font-family:'Cinzel',serif;color:var(--cream);font-size:15px;letter-spacing:.08em}
+
+  /* context bar */
+  .ctxbar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;font-family:'Space Mono',monospace;font-size:10.5px}
+  .pill{background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:20px;padding:3px 9px;color:#cfd4dc}
+  .pill b{color:var(--gold)}
+
+  /* hero token */
+  .lineup{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px}
+  .htok{display:flex;align-items:center;gap:5px;background:rgba(0,0,0,.28);border:1px solid var(--line);
+    border-radius:18px;padding:2px 8px 2px 2px;font-size:11px;color:#dfe3ea}
+  .av{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-family:'Space Mono',monospace;font-size:8.5px;font-weight:700;color:#0b0d10}
+  .lab{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin:8px 0 4px}
+
+  /* coach panel */
+  .coach{border-radius:14px;padding:13px;margin-top:12px;
+    background:linear-gradient(180deg,rgba(143,156,242,.08),rgba(15,18,23,.7));border:1px solid rgba(143,156,242,.28)}
+  .coach.rules{background:linear-gradient(180deg,rgba(199,154,69,.06),rgba(15,18,23,.7));border-color:rgba(199,154,69,.22)}
+  .coach-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:9px}
+  .coach-title{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--cream);display:flex;align-items:center;gap:6px}
+  .chip{font-family:'Space Mono',monospace;font-size:9.5px;border-radius:20px;padding:3px 8px;white-space:nowrap;
+    display:inline-flex;align-items:center;gap:5px}
+  .chip.ai{background:rgba(143,156,242,.16);border:1px solid rgba(143,156,242,.4);color:#bcc6f7}
+  .chip.rules{background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--muted)}
+  .chip.dl{background:rgba(232,181,78,.12);border:1px solid rgba(232,181,78,.35);color:#e3c98a}
+  .headline{font-size:13px;color:#dbe0ea;line-height:1.5;margin:0 0 11px;font-style:italic}
+  .headline .hl{color:var(--violet);font-style:normal;font-weight:600}
+
+  .mods{display:flex;flex-direction:column;gap:7px}
+  .mod{display:flex;gap:9px;align-items:flex-start;border-radius:10px;padding:8px 10px;background:rgba(255,255,255,.025);border:1px solid var(--line)}
+  .mod .ic{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;background:rgba(255,255,255,.05)}
+  .mod .body{flex:1;min-width:0}
+  .mod .mt{font-size:12px;font-weight:600;color:#eef1f6;display:flex;align-items:center;gap:7px}
+  .mod .urg{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:1px 5px;border-radius:4px}
+  .urg.high{background:rgba(232,114,138,.16);color:#f0a6b4;border:1px solid rgba(232,114,138,.4)}
+  .urg.med{background:rgba(232,181,78,.14);color:#e7c684;border:1px solid rgba(232,181,78,.34)}
+  .urg.low{background:rgba(125,133,147,.14);color:#aab2bd;border:1px solid rgba(125,133,147,.3)}
+  .mod .md{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .mod .md .item{color:var(--amber);font-weight:600}
+  .mod.crit{border-color:rgba(232,114,138,.3);box-shadow:inset 0 0 18px rgba(232,114,138,.05)}
+  .ainote{color:#aab2f0;font-style:italic}
+
+  /* rec stub under coach */
+  .recstub{margin-top:10px;border-top:1px solid var(--line);padding-top:9px}
+  .recrow{display:flex;align-items:center;gap:8px;font-size:12px;color:#cdd6e1;padding:4px 0}
+  .recrow .rank{font-family:'Cinzel',serif;color:var(--gold);width:14px}
+  .tier{font-family:'Space Mono',monospace;font-size:9px;font-weight:700;color:#0b0d10;border-radius:4px;padding:1px 5px}
+  .score{margin-left:auto;font-family:'Space Mono',monospace;font-weight:700}
+
+  .annot{flex:0 0 230px;min-width:200px;align-self:center;color:var(--muted);font-size:12.5px;border-left:2px solid var(--violet);padding:4px 0 4px 14px}
+  .annot b{color:var(--cream)} .annot .k{color:var(--violet);font-family:'Space Mono',monospace;font-size:11px}
+
+  .morph{display:flex;align-items:center;justify-content:center;gap:10px;color:var(--gold);font-family:'Space Mono',monospace;font-size:11px;margin:14px 0;letter-spacing:.1em}
+  .morph .ar{font-size:18px}
+
+  .foot{margin-top:46px;border:1px solid rgba(143,156,242,.25);border-radius:14px;padding:16px 18px;background:linear-gradient(180deg,rgba(143,156,242,.06),transparent);font-size:13px;color:#c4ccd9}
+  .foot b{color:var(--violet)}
+  .cap2{font-family:'Space Mono',monospace;font-size:10px;color:var(--dim);text-align:center;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <span class="tag">Mockup · Flow Storyboard · not final UI</span>
+  <h1>ADAPTIVE COACH — ONE WHOLE FLOW</h1>
+  <p class="sub">How the recommendation area <b style="color:#dbe0ea">reconfigures itself</b> as you build the draft. The on-device AI (Chrome) only <i>selects &amp; orders</i> panels from a fixed catalog and writes the prose — the deterministic engine still owns every score. With no AI, the same panels appear via rules.</p>
+
+  <div class="legend">
+    <span><span class="dot" style="background:#e8728a"></span><b>high</b> urgency</span>
+    <span><span class="dot" style="background:#e8b54e"></span><b>med</b></span>
+    <span><span class="dot" style="background:#7d8593"></span><b>low</b></span>
+    <span><span class="dot" style="background:#8f9cf2"></span><b>AI-written</b> note</span>
+    <span class="mono">attr colours: <span style="color:#d14b3c">STR</span> · <span style="color:#74b13f">AGI</span> · <span style="color:#3f8fd1">INT</span> · <span style="color:#c79a45">UNI</span></span>
+  </div>
+
+  <div class="rule"></div>
+
+  <!-- STEP 1 -->
+  <div class="step">
+    <div class="step-h"><span class="n">01</span><h2>Set up — pool, role, rank · empty board</h2></div>
+    <p class="step-note">Nothing to coach yet. Panel shows the baseline build only. Capability detected on load → here the browser has no on-device AI.</p>
+    <div class="frames">
+      <div class="frame">
+        <span class="cap">state · rules tier</span>
+        <div class="apphead"><div class="logo">⚔</div><div class="t">DRAFT ORACLE</div></div>
+        <div class="ctxbar">
+          <span class="pill">Role <b>1 · Carry</b></span>
+          <span class="pill">Rank <b>Archon</b></span>
+          <span class="pill">Pool <b>14</b></span>
+        </div>
+        <div class="lab">Enemy board · 0/5</div>
+        <div class="htok" style="opacity:.5"><span style="color:#566070;font-size:11px;padding:2px 6px">none yet — add the enemy lineup</span></div>
+
+        <div class="coach rules">
+          <div class="coach-top">
+            <div class="coach-title">🜂 Oracle Coach</div>
+            <span class="chip rules">● rule-based</span>
+          </div>
+          <p class="headline">Add the enemy lineup to get matchup-tuned coaching.</p>
+          <div class="mods">
+            <div class="mod">
+              <div class="ic">🪙</div>
+              <div class="body">
+                <div class="mt">Core build path <span class="urg low">low</span></div>
+                <div class="md">Spectre · <span class="item">Radiance → Manta → Skadi → BKB</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <span class="k">capability()</span><br>
+        On load the app checks <b>LanguageModel</b>. Not present here → <b>rule-based</b> chip, panel still adapts, just no AI prose.
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step">
+    <div class="step-h"><span class="n">02</span><h2>Magic-heavy enemy appears — panel reconfigures</h2></div>
+    <p class="step-note">You add 5 squishy casters + a stun. The engine signals (magic 4, lockdown 3) drive which modules surface, their order, and urgency. Still no AI here.</p>
+    <div class="frames">
+      <div class="frame">
+        <span class="cap">state · rules tier</span>
+        <div class="ctxbar">
+          <span class="pill">Role <b>1 · Carry</b></span><span class="pill">Rank <b>Archon</b></span>
+          <span class="pill" style="border-color:rgba(209,70,58,.4)">Enemy <b style="color:#e09a92">magic ×4 · stun</b></span>
+        </div>
+        <div class="lab">Enemy board · 5/5</div>
+        <div class="lineup">
+          <span class="htok"><span class="av" style="background:#3f8fd1">LI</span>Lina</span>
+          <span class="htok"><span class="av" style="background:#3f8fd1">TI</span>Tinker</span>
+          <span class="htok"><span class="av" style="background:#3f8fd1">ZE</span>Zeus</span>
+          <span class="htok"><span class="av" style="background:#3f8fd1">LN</span>Lion</span>
+          <span class="htok"><span class="av" style="background:#c79a45">SK</span>Sand King</span>
+        </div>
+
+        <div class="coach rules">
+          <div class="coach-top">
+            <div class="coach-title">🜂 Oracle Coach</div>
+            <span class="chip rules">● rule-based</span>
+          </div>
+          <p class="headline">Magic-heavy enemy — buy BKB on time and don't fight early.</p>
+          <div class="mods">
+            <div class="mod crit"><div class="ic">⏱</div><div class="body"><div class="mt">BKB timing <span class="urg high">high</span></div><div class="md">4 magic + Sand King chain — <span class="item">Black King Bar</span> before you commit Haunt.</div></div></div>
+            <div class="mod"><div class="ic">🛡</div><div class="body"><div class="mt">Survive early <span class="urg med">med</span></div><div class="md">Greedy scaler — rush Radiance, refuse fights til ~20m.</div></div></div>
+            <div class="mod"><div class="ic">🌀</div><div class="body"><div class="mt">Dispel silences <span class="urg med">med</span></div><div class="md">Lion/Zeus — <span class="item">Manta Style</span> shrugs the silence.</div></div></div>
+            <div class="mod"><div class="ic">☠</div><div class="body"><div class="mt">Threats to your pick <span class="urg low">low</span></div><div class="md">Tinker kites you — itemise Pike / Skadi.</div></div></div>
+          </div>
+          <div class="recstub">
+            <div class="recrow"><span class="rank">1</span><span class="av" style="background:#74b13f;width:18px;height:18px">SP</span>Spectre <span class="tier" style="background:#c79a45">S</span><span class="score" style="color:#74b13f">+8.4</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <span class="k">selectModulesRules()</span><br>
+        Signals <b>magic≥2</b> &amp; <b>lockdown≥3</b> make <b>BKB-timing</b> mandatory (safety-floor). Order = urgency, then catalog priority. 100% deterministic.
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step">
+    <div class="step-h"><span class="n">03</span><h2>Same board, on a Chrome device with on-device AI</h2></div>
+    <p class="step-note">Identical draft — but now Gemini Nano (on-device) reorders, writes a fluent headline + per-module notes. It can only pick from the same catalog; the safety-floor still guarantees BKB-timing. Engine scores unchanged.</p>
+    <div class="frames">
+      <div class="frame" style="border-color:rgba(143,156,242,.4)">
+        <span class="cap" style="border-color:rgba(143,156,242,.4);color:#bcc6f7">state · AI tier</span>
+        <div class="ctxbar">
+          <span class="pill">Role <b>1 · Carry</b></span><span class="pill">Rank <b>Archon</b></span>
+          <span class="pill" style="border-color:rgba(209,70,58,.4)">Enemy <b style="color:#e09a92">magic ×4 · stun</b></span>
+        </div>
+        <div class="coach">
+          <div class="coach-top">
+            <div class="coach-title">🜂 Oracle Coach</div>
+            <span class="chip ai">⚡ on-device AI · Gemini Nano</span>
+          </div>
+          <p class="headline">Five squishy casters and a Sand King stun-chain — <span class="hl">Spectre wins late, but you'll get blown up first.</span> BKB is non-negotiable; rush Radiance and refuse fights until 20.</p>
+          <div class="mods">
+            <div class="mod crit"><div class="ic">⏱</div><div class="body"><div class="mt">BKB timing <span class="urg high">high</span></div><div class="md ainote">"Their whole kill window is one BKB long — buy it before Skadi."</div></div></div>
+            <div class="mod crit"><div class="ic">🛡</div><div class="body"><div class="mt">Survive early <span class="urg high">high</span></div><div class="md ainote">"You're useless dead at 8 min. Farm safe, take Haunt fights only after BKB."</div></div></div>
+            <div class="mod"><div class="ic">🌀</div><div class="body"><div class="mt">Dispel silences <span class="urg med">med</span></div><div class="md ainote">"Manta clears Lion hex + Global Silence in a pinch."</div></div></div>
+            <div class="mod"><div class="ic">🚫</div><div class="body"><div class="mt">Consider banning <span class="urg med">med</span></div><div class="md ainote">"Tinker is the single biggest problem for your pool."</div></div></div>
+          </div>
+          <div class="recstub">
+            <div class="recrow"><span class="rank">1</span><span class="av" style="background:#74b13f;width:18px;height:18px">SP</span>Spectre <span class="tier" style="background:#c79a45">S</span><span class="score" style="color:#74b13f">+8.4</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <span class="k">selectModulesAI() → parseCoachBrief()</span><br>
+        AI promoted <b>survive-early</b> to high and swapped in <b>ban-warning</b>. zod-validated, unknown ids dropped, safety-floor intact. Same <b>+8.4</b> score.
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="step">
+    <div class="step-h"><span class="n">04</span><h2>Swap the enemy to physical &amp; tanky — the UI <i>morphs</i></h2></div>
+    <p class="step-note">This is the headline behaviour: change the threat, and a different set of panels appears in a different order. Same pick, completely different game plan.</p>
+
+    <div class="morph"><span>magic lineup</span><span class="ar">⟶</span><span style="color:#e09a92">physical / tanky lineup</span><span class="ar">⟶</span><span>panels rebuild</span></div>
+
+    <div class="frames">
+      <div class="frame" style="border-color:rgba(143,156,242,.4)">
+        <span class="cap" style="border-color:rgba(143,156,242,.4);color:#bcc6f7">state · AI tier · new board</span>
+        <div class="lineup">
+          <span class="htok"><span class="av" style="background:#74b13f">PA</span>P. Assassin</span>
+          <span class="htok"><span class="av" style="background:#d14b3c">BB</span>Bristleback</span>
+          <span class="htok"><span class="av" style="background:#d14b3c">WK</span>Wraith King</span>
+          <span class="htok"><span class="av" style="background:#74b13f">RZ</span>Razor</span>
+          <span class="htok"><span class="av" style="background:#d14b3c">SL</span>Slardar</span>
+        </div>
+        <div class="coach">
+          <div class="coach-top">
+            <div class="coach-title">🜂 Oracle Coach</div>
+            <span class="chip ai">⚡ on-device AI · Gemini Nano</span>
+          </div>
+          <p class="headline">Physical and very tanky — <span class="hl">PA's evasion and Bristle/WK passives are the problem,</span> not burst. MKB + Silver Edge, and armor wins the long fights.</p>
+          <div class="mods">
+            <div class="mod crit"><div class="ic">🎯</div><div class="body"><div class="mt">MKB vs evasion <span class="urg high">high</span></div><div class="md ainote">"PA blur eats your right-clicks — <span class="item">Monkey King Bar</span> is mandatory."</div></div></div>
+            <div class="mod crit"><div class="ic">🗡</div><div class="body"><div class="mt">Break passives <span class="urg high">high</span></div><div class="md ainote">"<span class="item">Silver Edge</span> turns off Warpath + Reincarnation mid-fight."</div></div></div>
+            <div class="mod"><div class="ic">💉</div><div class="body"><div class="mt">Cut their healing <span class="urg med">med</span></div><div class="md ainote">"WK lifesteal + Bristle sustain — Skadi / Spirit Vessel."</div></div></div>
+            <div class="mod"><div class="ic">⛨</div><div class="body"><div class="mt">Armor swings it <span class="urg low">low</span></div><div class="md">3 physical cores — <span class="item">Assault Cuirass</span> for the team.</div></div></div>
+          </div>
+          <div class="recstub">
+            <div class="recrow"><span class="rank">1</span><span class="av" style="background:#74b13f;width:18px;height:18px">PL</span>Phantom Lancer <span class="tier" style="background:#74b13f">A</span><span class="score" style="color:#74b13f">+7.1</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <span class="k">same component, new context</span><br>
+        BKB/silence/survive panels are gone; <b>mkb-evasion</b>, <b>break-passives</b>, <b>anti-heal</b> took their place. <b>The page is a function of the board.</b>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 5 -->
+  <div class="step">
+    <div class="step-h"><span class="n">05</span><h2>Capability states the chip can show</h2></div>
+    <p class="step-note">The same panel, three device realities. Nobody is ever blocked — AI is pure enhancement on top of the rules tier.</p>
+    <div class="frames">
+      <div class="frame" style="min-width:260px;flex:1 1 260px">
+        <span class="cap">chrome · ready</span>
+        <div class="coach"><div class="coach-top"><div class="coach-title">🜂 Coach</div><span class="chip ai">⚡ on-device AI</span></div>
+        <p class="headline" style="margin:0">Full AI ordering + fluent notes.</p></div>
+      </div>
+      <div class="frame" style="min-width:260px;flex:1 1 260px">
+        <span class="cap">chrome · model not downloaded</span>
+        <div class="coach rules"><div class="coach-top"><div class="coach-title">🜂 Coach</div><span class="chip dl">⬇ Enable AI · 42%</span></div>
+        <p class="headline" style="margin:0">Rules tier now; one tap downloads Nano, then upgrades live.</p></div>
+      </div>
+      <div class="frame" style="min-width:260px;flex:1 1 260px">
+        <span class="cap">firefox / safari / old chrome</span>
+        <div class="coach rules"><div class="coach-top"><div class="coach-title">🜂 Coach</div><span class="chip rules">● rule-based</span></div>
+        <p class="headline" style="margin:0">Same adaptive panels, deterministic prose.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <b>→ The contract in one line.</b> The AI may <b>choose, reorder, and annotate</b> panels from a fixed catalog and write the headline — it can never invent a panel, hide a safety-critical one, or change a score. Everything runs <b>on-device</b>; the draft never leaves the browser. Remove the AI and you still get step 2's adaptive layout everywhere.
+    <div class="cap2">mockup only · spacing, copy and exact panels are illustrative · engine = source of truth</div>
+  </div>
+
+</div>
+</body>
+</html>
