@@ -57,6 +57,9 @@ export interface CoachModule {
 
 export type CoachSource = "ai" | "rules";
 
+/** Detected on-device AI capability of the current browser/device. */
+export type CoachCapability = "ai" | "ai-downloadable" | "rules";
+
 export interface CoachBrief {
   headline: string;
   modules: CoachModule[];

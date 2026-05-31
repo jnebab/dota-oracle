@@ -1,4 +1,4 @@
-import { buildContext, selectModulesRules } from "@dota-oracle/coach";
+import { buildContext } from "@dota-oracle/coach";
 import {
   HERO_BY_ID,
   META,
@@ -23,6 +23,7 @@ import {
   X,
 } from "lucide-react";
 import { Fragment, type ReactNode, useMemo, useState } from "react";
+import { useCoach } from "./coach/useCoach";
 import { CoachPanel } from "./components/CoachPanel";
 import { HeroPicker } from "./components/HeroPicker";
 import { MetaStatus } from "./components/MetaStatus";
@@ -167,21 +168,20 @@ export function DraftOracle() {
       .sort((a, b) => b.total - a.total || a.hero.name.localeCompare(b.hero.name));
   }, [poolIds, myRole, team, enemy, bracketFactor, matchups]);
 
-  const coachBrief = useMemo(
+  const draftContext = useMemo(
     () =>
-      selectModulesRules(
-        buildContext({
-          recs,
-          allies: team,
-          enemies: enemy,
-          role: myRole,
-          rank,
-          bracketFactor,
-          matchups,
-        }),
-      ),
+      buildContext({
+        recs,
+        allies: team,
+        enemies: enemy,
+        role: myRole,
+        rank,
+        bracketFactor,
+        matchups,
+      }),
     [recs, team, enemy, myRole, rank, bracketFactor, matchups],
   );
+  const { brief: coachBrief, capability: coachCapability, enableAI } = useCoach(draftContext);
 
   const contested = team.some((x) => x.pos === myRole);
 
@@ -497,7 +497,9 @@ export function DraftOracle() {
             contested.
           </div>
         )}
-        {recs.length > 0 && <CoachPanel brief={coachBrief} />}
+        {recs.length > 0 && (
+          <CoachPanel brief={coachBrief} capability={coachCapability} onEnableAI={enableAI} />
+        )}
         {recs.length === 0 ? (
           <div
             className="rounded-xl p-8 text-center"

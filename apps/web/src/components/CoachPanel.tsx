@@ -1,5 +1,11 @@
-import { type CoachBrief, MODULES, type Urgency } from "@dota-oracle/coach";
+import { type CoachBrief, type CoachCapability, MODULES, type Urgency } from "@dota-oracle/coach";
 import { Brain } from "lucide-react";
+
+interface CoachPanelProps {
+  brief: CoachBrief;
+  capability?: CoachCapability;
+  onEnableAI?: () => void;
+}
 
 const URGENCY: Record<Urgency, { label: string; color: string; bg: string; border: string }> = {
   high: {
@@ -22,8 +28,9 @@ const URGENCY: Record<Urgency, { label: string; color: string; bg: string; borde
   },
 };
 
-export function CoachPanel({ brief }: { brief: CoachBrief }) {
+export function CoachPanel({ brief, capability, onEnableAI }: CoachPanelProps) {
   const ai = brief.source === "ai";
+  const downloadable = !ai && capability === "ai-downloadable";
   return (
     <section
       className="mb-3 rounded-xl p-3.5"
@@ -41,24 +48,40 @@ export function CoachPanel({ brief }: { brief: CoachBrief }) {
         >
           <Brain size={13} color={ai ? "#8f9cf2" : "#c79a45"} /> Oracle Coach
         </span>
-        <span
-          className="oracle-mono fs10 rounded-full px-2 py-1"
-          style={
-            ai
-              ? {
-                  background: "rgba(143,156,242,.16)",
-                  border: "1px solid rgba(143,156,242,.4)",
-                  color: "#bcc6f7",
-                }
-              : {
-                  background: "rgba(255,255,255,.05)",
-                  border: "1px solid rgba(255,255,255,.08)",
-                  color: "#7d8593",
-                }
-          }
-        >
-          {ai ? "⚡ on-device AI" : "rule-based"}
-        </span>
+        {downloadable ? (
+          <button
+            type="button"
+            onClick={onEnableAI}
+            className="oracle-mono fs10 rounded-full px-2 py-1"
+            style={{
+              background: "rgba(232,181,78,.12)",
+              border: "1px solid rgba(232,181,78,.35)",
+              color: "#e3c98a",
+            }}
+            title="Download the on-device model (Chrome) for AI coaching"
+          >
+            ⬇ Enable on-device AI
+          </button>
+        ) : (
+          <span
+            className="oracle-mono fs10 rounded-full px-2 py-1"
+            style={
+              ai
+                ? {
+                    background: "rgba(143,156,242,.16)",
+                    border: "1px solid rgba(143,156,242,.4)",
+                    color: "#bcc6f7",
+                  }
+                : {
+                    background: "rgba(255,255,255,.05)",
+                    border: "1px solid rgba(255,255,255,.08)",
+                    color: "#7d8593",
+                  }
+            }
+          >
+            {ai ? "⚡ on-device AI" : "rule-based"}
+          </span>
+        )}
       </div>
 
       <p className="fs11 mb-2.5 italic" style={{ color: "#cdd6e1" }}>
