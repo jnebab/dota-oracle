@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@dota-oracle/coach": "workspace:*",
     "@dota-oracle/data": "workspace:*",
     "@dota-oracle/engine": "workspace:*",
     "@tanstack/react-query": "^5.62.7",

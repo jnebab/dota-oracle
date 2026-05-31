@@ -20,6 +20,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@dota-oracle/coach':
+        specifier: workspace:*
+        version: link:../../packages/coach
       '@dota-oracle/data':
         specifier: workspace:*
         version: link:../../packages/data
@@ -66,6 +69,25 @@ importers:
       vite:
         specifier: ^5.4.11
         version: 5.4.21
+
+  packages/coach:
+    dependencies:
+      '@dota-oracle/data':
+        specifier: workspace:*
+        version: link:../data
+      '@dota-oracle/engine':
+        specifier: workspace:*
+        version: link:../engine
+      zod:
+        specifier: ^3.24.1
+        version: 3.25.76
+    devDependencies:
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9
 
   packages/data:
     dependencies:

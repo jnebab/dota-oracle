@@ -1,3 +1,4 @@
+import { buildContext, selectModulesRules } from "@dota-oracle/coach";
 import {
   HERO_BY_ID,
   META,
@@ -22,6 +23,7 @@ import {
   X,
 } from "lucide-react";
 import { Fragment, type ReactNode, useMemo, useState } from "react";
+import { CoachPanel } from "./components/CoachPanel";
 import { HeroPicker } from "./components/HeroPicker";
 import { MetaStatus } from "./components/MetaStatus";
 import { MicDictate } from "./components/MicDictate";
@@ -164,6 +166,22 @@ export function DraftOracle() {
       .map((h) => ({ hero: h, ...scoreHero(h, teamHeroes, enemies, bracketFactor, matchups) }))
       .sort((a, b) => b.total - a.total || a.hero.name.localeCompare(b.hero.name));
   }, [poolIds, myRole, team, enemy, bracketFactor, matchups]);
+
+  const coachBrief = useMemo(
+    () =>
+      selectModulesRules(
+        buildContext({
+          recs,
+          allies: team,
+          enemies: enemy,
+          role: myRole,
+          rank,
+          bracketFactor,
+          matchups,
+        }),
+      ),
+    [recs, team, enemy, myRole, rank, bracketFactor, matchups],
+  );
 
   const contested = team.some((x) => x.pos === myRole);
 
@@ -479,6 +497,7 @@ export function DraftOracle() {
             contested.
           </div>
         )}
+        {recs.length > 0 && <CoachPanel brief={coachBrief} />}
         {recs.length === 0 ? (
           <div
             className="rounded-xl p-8 text-center"
