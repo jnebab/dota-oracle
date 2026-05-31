@@ -1,3 +1,4 @@
+import httpx
 import pytest
 from fastapi.testclient import TestClient
 
@@ -49,3 +50,30 @@ def test_matchups_unknown_slug(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(opendota, "fetch_matchups", fake_matchups)
     # Unknown slug resolves to no hero id → simply omitted.
     assert client.get("/api/matchups", params={"vs": "not-a-hero"}).json() == {}
+
+
+def test_matchups_upstream_error_502(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def boom(_hero_id: int) -> list[dict]:
+        raise httpx.ConnectError("opendota down")
+
+    monkeypatch.setattr(opendota, "fetch_matchups", boom)
+    assert client.get("/api/matchups", params={"vs": "medusa"}).status_code == 502
+
+
+def test_matchups_caps_enemies(monkeypatch: pytest.MonkeyPatch) -> None:
+    heroes = [{"id": i, "localized_name": f"Hero{i}"} for i in range(1, 8)]  # 7 heroes
+    calls: list[int] = []
+
+    async def fake_heroes() -> list[dict]:
+        return heroes
+
+    async def fake_matchups(hero_id: int) -> list[dict]:
+        calls.append(hero_id)
+        return []
+
+    monkeypatch.setattr(opendota, "fetch_heroes", fake_heroes)
+    monkeypatch.setattr(opendota, "fetch_matchups", fake_matchups)
+    vs = ",".join(f"hero{i}" for i in range(1, 8))  # 7 enemy slugs
+    res = client.get("/api/matchups", params={"vs": vs})
+    assert res.status_code == 200
+    assert len(calls) == 5  # MAX_ENEMIES cap
