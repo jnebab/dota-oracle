@@ -1,4 +1,5 @@
-import type { Hero } from "@dota-oracle/data";
+import { type Hero, heroIconUrl } from "@dota-oracle/data";
+import { useState } from "react";
 import { ATTR_COLOR } from "../lib/colors";
 
 interface PortraitProps {
@@ -7,6 +8,29 @@ interface PortraitProps {
 }
 
 export function Portrait({ hero, size = 38 }: PortraitProps) {
+  const [failed, setFailed] = useState(false);
+  const url = heroIconUrl(hero.id);
+  const ring = `0 0 0 2px ${ATTR_COLOR[hero.attr]}55`;
+
+  if (url && !failed) {
+    return (
+      <img
+        src={url}
+        alt={hero.name}
+        loading="lazy"
+        onError={() => setFailed(true)}
+        className="shrink-0 rounded-full object-cover"
+        style={{
+          width: size,
+          height: size,
+          boxShadow: ring,
+          background: `${ATTR_COLOR[hero.attr]}22`,
+        }}
+      />
+    );
+  }
+
+  // Fallback: attribute-colored initials (offline, or if the CDN image fails).
   const initials = hero.name
     .split(" ")
     .map((w) => w[0])
@@ -22,7 +46,7 @@ export function Portrait({ hero, size = 38 }: PortraitProps) {
         fontSize: size * 0.34,
         color: "#0b0d10",
         background: `radial-gradient(circle at 30% 25%, ${ATTR_COLOR[hero.attr]}, ${ATTR_COLOR[hero.attr]}aa)`,
-        boxShadow: `0 0 0 2px ${ATTR_COLOR[hero.attr]}55, inset 0 1px 2px rgba(255,255,255,.35)`,
+        boxShadow: `${ring}, inset 0 1px 2px rgba(255,255,255,.35)`,
       }}
     >
       {initials}

@@ -9,6 +9,7 @@ export * from "./meta";
 export * from "./bracket";
 export * from "./builds";
 export * from "./aliases";
+export * from "./icons";
 
 import { HERO_ALIASES } from "./aliases";
 import { BRACKET_FIT } from "./bracket";

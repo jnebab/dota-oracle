@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { HEROES, HERO_ALIASES, HERO_BY_ID, validateData } from "./index";
+import { HEROES, HERO_ALIASES, HERO_BY_ID, heroIconUrl, validateData } from "./index";
 
 describe("data integrity", () => {
   it("passes schema + reference validation", () => {
@@ -29,6 +29,13 @@ describe("data integrity", () => {
         expect(prev === undefined || prev === id).toBe(true);
         owner.set(alias, id);
       }
+    }
+  });
+
+  it("has an icon URL for every hero", () => {
+    for (const h of HEROES) {
+      const url = heroIconUrl(h.id);
+      expect(url, `${h.id} should have an icon`).toMatch(/^https:\/\/.+\.png$/);
     }
   });
 
