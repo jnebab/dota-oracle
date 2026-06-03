@@ -1,0 +1,10 @@
+{
+  "name": "Draft Oracle — Dota 2 Draft Helper",
+  "short_name": "Draft Oracle",
+  "description": "Dota 2 draft & counter-pick helper with lineup-tuned item builds.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0c0f",
+  "theme_color": "#0a0c0f",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

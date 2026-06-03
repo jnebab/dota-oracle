@@ -3,14 +3,102 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Draft Oracle — Dota 2 draft &amp; live-match advisor</title>
+    <meta name="theme-color" content="#0a0c0f" />
+
+    <!-- Primary SEO -->
+    <title>Draft Oracle — Dota 2 Draft & Counter-Pick Helper (7.41c)</title>
     <meta
       name="description"
-      content="Dota 2 draft + live-match advisor: ranks the best carry from your pool by 7.41c meta, matchups, and rank bracket, with lineup-tuned item builds."
+      content="Free Dota 2 draft tool: pick the best carry from your hero pool by patch meta, counters, real win-rate matchups and rank bracket — with lineup-tuned item builds. Works in the browser, offline."
     />
+    <meta
+      name="keywords"
+      content="dota 2 draft, dota 2 counter pick, dota 2 hero picker, dota 2 carry tier list, dota 2 item builds, dota 2 draft helper, 7.41c meta, who to pick dota 2, dota 2 counter picker"
+    />
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="Draft Oracle" />
+    <!-- Update this to your deployed domain. -->
+    <link rel="canonical" href="https://dota-oracle.vercel.app/" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- Open Graph (Facebook, Discord, etc.) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Draft Oracle" />
+    <meta property="og:title" content="Draft Oracle — Dota 2 Draft & Counter-Pick Helper" />
+    <meta
+      property="og:description"
+      content="Pick the best carry from your hero pool by meta, counters, win-rate matchups and rank — with item builds and an adaptive AI coach."
+    />
+    <meta property="og:url" content="https://dota-oracle.vercel.app/" />
+    <meta property="og:image" content="https://dota-oracle.vercel.app/og-image.svg" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Draft Oracle — Dota 2 Draft & Counter-Pick Helper" />
+    <meta
+      name="twitter:description"
+      content="Pick the best carry from your hero pool by meta, counters, win-rate matchups and rank — with item builds and an adaptive AI coach."
+    />
+    <meta name="twitter:image" content="https://dota-oracle.vercel.app/og-image.svg" />
+
+    <!-- Structured data: helps Google show a rich result -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Draft Oracle",
+        "applicationCategory": "GameApplication",
+        "operatingSystem": "Web",
+        "url": "https://dota-oracle.vercel.app/",
+        "description": "A Dota 2 draft and counter-pick helper. Ranks the best carry from your hero pool by patch meta, counters, win-rate matchups and rank bracket, with lineup-tuned item builds and an adaptive on-device AI coach.",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "about": { "@type": "VideoGame", "name": "Dota 2" }
+      }
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <!--
+      Crawlable fallback content. React replaces #root on mount (createRoot),
+      so search engines and no-JS visitors still get a meaningful, keyword-rich
+      description and headings while users get the full interactive app.
+    -->
+    <div id="root">
+      <main
+        style="
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          padding: 2rem;
+          color: #dfe3ea;
+          background: #0a0c0f;
+          font-family: Georgia, 'Times New Roman', serif;
+        "
+      >
+        <div style="max-width: 40rem">
+          <h1 style="color: #f0e6cf; letter-spacing: 0.08em; font-size: 2rem; margin: 0 0 0.75rem">
+            Draft Oracle — Dota 2 Draft &amp; Counter-Pick Helper
+          </h1>
+          <p style="color: #9aa1ad; line-height: 1.6">
+            Draft Oracle recommends the best carry to pick from your hero pool for your role and
+            rank, weighted by the current-patch (7.41c) meta, hero counters, real win-rate matchups
+            and your rank bracket — then generates a lineup-tuned item build for each pick.
+          </p>
+          <p style="color: #76859a; line-height: 1.6; font-size: 0.95rem">
+            Features: hero counter &amp; synergy analysis, situational item builds (BKB, MKB, anti-heal),
+            rank-bracket tuning, voice hero input, recent-match import, and an adaptive AI draft coach.
+            Runs in your browser and works offline. Loading the app…
+          </p>
+          <noscript>
+            <p style="color: #e09a92">
+              Draft Oracle needs JavaScript enabled to run the interactive draft board.
+            </p>
+          </noscript>
+        </div>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#10161f" />
+  <rect x="0.5" y="0.5" width="63" height="63" rx="13.5" fill="none" stroke="#c79a45" stroke-opacity="0.35" />
+  <g stroke="#c79a45" stroke-width="3.6" stroke-linecap="round">
+    <!-- crossed swords -->
+    <line x1="18" y1="46" x2="44" y2="20" />
+    <line x1="46" y1="46" x2="20" y2="20" />
+    <!-- guards -->
+    <line x1="40" y1="16" x2="48" y2="24" />
+    <line x1="24" y1="16" x2="16" y2="24" />
+  </g>
+</svg>
