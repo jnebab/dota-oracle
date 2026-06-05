@@ -34,29 +34,3 @@ class PlayerResponse(BaseModel):
     match_count: int
     win_rate: float
     top_heroes: list[PlayerHero]
-
-
-class MatchPlayer(BaseModel):
-    """One player in an imported match."""
-
-    hero_id: int
-    hero: str | None = None  # our hero slug, when the numeric id maps cleanly
-    is_radiant: bool
-    position: str | None = None  # our Role (Carry/Mid/Offlane/Support/Hard Support)
-
-
-class MatchImportResponse(BaseModel):
-    """Imported match served by ``GET /api/recent/{handle}``.
-
-    ``radiant``/``dire`` are hero-slug lists ready to drop onto the board;
-    ``searched_is_radiant`` says which side the looked-up player is on so the
-    client can pick ally vs enemy.
-    """
-
-    match_id: int | None = None
-    duration_seconds: int
-    searched_account_id: int
-    searched_is_radiant: bool | None = None
-    radiant: list[str]
-    dire: list[str]
-    players: list[MatchPlayer]

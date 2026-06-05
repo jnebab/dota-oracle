@@ -6,14 +6,13 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """Runtime configuration, loaded from environment variables.
 
-    Secrets (STRATZ token, API keys) are server-side only and must never be
+    Secrets (API keys, Redis/cron tokens) are server-side only and must never be
     exposed to the client bundle.
     """
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    # External APIs (M4). Optional so the API boots without them.
-    stratz_token: str | None = None
+    # External APIs. Optional so the API boots without them.
     opendota_key: str | None = None
     steam_key: str | None = None
 

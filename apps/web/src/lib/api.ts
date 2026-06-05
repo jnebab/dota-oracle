@@ -67,25 +67,3 @@ export function getMatchups(enemySlugs: string[]): Promise<MatchupTableResponse>
   const vs = encodeURIComponent(enemySlugs.join(","));
   return getJson(`/api/matchups?vs=${vs}`, matchupTableSchema);
 }
-
-const matchPlayerSchema = z.object({
-  hero_id: z.number(),
-  hero: z.string().nullable(),
-  is_radiant: z.boolean(),
-  position: z.string().nullable(),
-});
-
-export const matchImportResponseSchema = z.object({
-  match_id: z.number().nullable(),
-  duration_seconds: z.number(),
-  searched_account_id: z.number(),
-  searched_is_radiant: z.boolean().nullable(),
-  radiant: z.array(z.string()),
-  dire: z.array(z.string()),
-  players: z.array(matchPlayerSchema),
-});
-export type MatchImportResponse = z.infer<typeof matchImportResponseSchema>;
-
-export function getRecentMatch(handle: string): Promise<MatchImportResponse> {
-  return getJson(`/api/recent/${encodeURIComponent(handle)}`, matchImportResponseSchema);
-}

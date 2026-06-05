@@ -32,7 +32,6 @@ adaptive coaching panel — instantly, in the browser.
 | 🤖 | **Adaptive AI coach** | A panel that **reconfigures itself** per lineup — surfacing the right advice modules. Uses Chrome's **on-device** Gemini Nano when available, with a deterministic rule-based tier everywhere else. |
 | 🗣️ | **Voice dictation** | Say *"wraith king, lion, crystal maiden"* to fill the board. Handles nicknames, mishears, and spacing (Chrome/Edge). |
 | 🖼️ | **Official hero icons** | Real Dota portraits with a graceful initials fallback. |
-| 📥 | **Match import** | Type a Steam name/ID to auto-fill the board from a player's most recent match (STRATZ). |
 | ⚡ | **Instant & offline** | The scoring engine + seed data are bundled client-side, so core recommendations are instant and work with no network. |
 
 > The engine is **deterministic and the source of truth** — the AI coach only explains and
@@ -57,7 +56,7 @@ Just the web app (no backend needed for core recommendations):
 pnpm --filter web dev      # → http://localhost:5173
 ```
 
-The backend (only needed for match import / live matchups / meta refresh):
+The backend (only needed for live win-rate matchups and the meta refresh):
 
 ```bash
 cd apps/api
@@ -86,8 +85,8 @@ uv run uvicorn app.main:app --reload    # → http://localhost:8000
                    ▼  (only what the browser can't do)
    ┌──────────────────────────────────────────────┐
    │  apps/api  (FastAPI on Vercel functions)       │
-   │  /api/matchups · /api/recent · /api/meta · cron │
-   │  holds the STRATZ token, calls OpenDota/STRATZ  │
+   │  /api/matchups · /api/meta · /api/cron         │
+   │  rate-limited OpenDota calls + meta refresh     │
    └──────────────────────────────────────────────┘
 ```
 
@@ -126,7 +125,6 @@ All routes are served under `/api/*` (Vercel Python functions). None are require
 | `GET /api/meta?patch=&bracket=` | Meta tier snapshot (computed in Redis, else bundled seed) | — / Upstash |
 | `GET /api/matchups?vs=slug,slug` | Win-rate advantage vs the listed enemy heroes | OpenDota |
 | `GET /api/player/{id}` | Recent-match overview + top heroes | OpenDota |
-| `GET /api/recent/{handle}` | Resolve a name/SteamID → their last match lineup | STRATZ token |
 | `GET /api/cron/refresh-meta` | Recompute meta tiers → Redis (Vercel Cron, bi-weekly) | Upstash + `CRON_SECRET` |
 
 ---
@@ -138,7 +136,6 @@ Secrets are **server-side only** — never commit them or expose them to the cli
 
 | Variable | Required for | Notes |
 |---|---|---|
-| `STRATZ_TOKEN` | Match import | Free token from [stratz.com](https://stratz.com) → API. |
 | `OPENDOTA_KEY` | — (optional) | Raises OpenDota rate limits; matchups/player work without it. |
 | `STEAM_KEY` | — (optional) | Persona/SteamID resolution. |
 | `UPSTASH_REDIS_REST_URL` / `_TOKEN` | Meta refresh cache | Free [Upstash](https://upstash.com) Redis. |
@@ -210,6 +207,6 @@ the Vercel dashboard to light up match import, matchups, and the meta refresh.
 **API** FastAPI · Pydantic v2 · httpx · uv ·
 **Infra** Vercel · Upstash Redis ·
 **Tooling** pnpm workspaces · Turborepo · Biome · ruff ·
-**Data** STRATZ · OpenDota · on-device Gemini Nano (Chrome).
+**Data** OpenDota · on-device Gemini Nano (Chrome).
 
 See [`CLAUDE.md`](CLAUDE.md) for the full architecture, data contracts, and build milestones.

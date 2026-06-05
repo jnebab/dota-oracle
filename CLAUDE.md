@@ -3,7 +3,7 @@
 A Dota 2 **draft + live-match advisor**. Given the player's hero pool, role, rank, and the
 allied/enemy lineup, it recommends which carry to pick — ranked by current-patch (7.41d) meta,
 matchups (counters/synergy), and **rank bracket** — and produces a lineup-tuned item build for
-each pick. It can also pull a *live* game off STRATZ by username or SteamID and auto-fill the board.
+each pick.
 
 > The original single-file prototype (`prototype/DraftOracle.jsx`) contained the full scoring engine
 > and all hero/meta/build data. **Milestone 1 lifts that logic and data into proper packages** —
@@ -39,13 +39,10 @@ each pick. It can also pull a *live* game off STRATZ by username or SteamID and 
 ## Key flows
 - **Recommend** (client-only): `scoreHero(candidate, team, enemy, bracketFactor)` = meta tier weight
   + hard-counters (±) + kit-tag edges + synergy + bracketFit (full ≤Archon, half Legend/Ancient, none Divine+).
-- **Match import**: `GET /api/recent/{handle}` → resolve handle (SteamID64 → 32-bit via
-  `id - 76561197960265728`, or name → OpenDota `/search`) → STRATZ GraphQL
-  `player(steamAccountId).matches(request:{take:1})` (Bearer token) → return
-  `{ radiant[], dire[], players(+position→role), durationSeconds }` → client maps onto board → engine re-scores.
-  > NOTE: STRATZ has **no per-player live-match lookup** — `player.liveMatch` doesn't exist, and the
-  > top-level `live` query only covers watch-listed pro/league games. So we import the player's most
-  > recent finished match (universal + reliable) rather than a true live game.
+- **Matchups** (server, on-demand): `GET /api/matchups?vs=slug,slug` → for the ≤5 enemy heroes on
+  the board, fetch OpenDota head-to-head and return each candidate's win-rate advantage → engine
+  folds it into the score (falls back to bundled counters offline).
+  > NOTE: the earlier STRATZ "match import" feature was removed — it's no longer used.
 - **Meta refresh** (Vercel Cron, daily): pull hero winrates by patch+bracket → compute tiers → store
   snapshot → served via `GET /api/meta?patch=&bracket=`. Replaces hand-tuned tiers; the **bracket overlay stays**.
 
@@ -64,7 +61,7 @@ LiveMatch   { radiant:Hero[]; dire:Hero[]; positions?; gameTime }
 - Engine functions are pure; side effects only in `apps/*`.
 - Commit style: Conventional Commits. Small PR-sized commits per milestone task.
 - Tests: vitest for `packages/engine`; pytest for `apps/api`. Don't finish a milestone without tests.
-- Secrets via env only (`STRATZ_TOKEN`, `OPENDOTA_KEY?`, `STEAM_KEY?`); `.env.example` committed.
+- Secrets via env only (`OPENDOTA_KEY?`, `STEAM_KEY?`, Upstash + `CRON_SECRET`); `.env.example` committed.
 
 ## Milestones (build in order)
 - **M0 — scaffold**: pnpm+turbo workspace, `apps/web` (Vite), `apps/api` (uv/FastAPI), Biome+ruff, `vercel.json`, CI. ✅
@@ -76,9 +73,9 @@ LiveMatch   { radiant:Hero[]; dire:Hero[]; positions?; gameTime }
 - **M6 — ship**: secrets, README, deploy polish.
 
 ## External APIs
-- **STRATZ** GraphQL `https://api.stratz.com/graphql` — Bearer token; per-player live match + winrates. Check the in-browser GraphQL explorer for exact `liveMatch` field names before coding M4.
-- **OpenDota** REST `https://api.opendota.com/api` — `/search?q=`, `/players/{id}/recentMatches`, hero stats. Optional API key raises limits.
+- **OpenDota** REST `https://api.opendota.com/api` — `/heroStats`, `/heroes/{id}/matchups`, `/players/{id}/recentMatches`, hero constants. Optional API key raises limits.
 - **Steam Web API** — optional, persona/SteamID resolution.
+- (STRATZ was used for the removed match-import feature; no longer a dependency.)
 
 ## Definition of done (v1)
 Enter pool + role + rank, type a live player's name/SteamID, and get a ranked carry pick with a

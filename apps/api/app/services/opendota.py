@@ -25,12 +25,6 @@ async def fetch_recent_matches(account_id: int) -> list[dict]:
     return data if isinstance(data, list) else []
 
 
-async def search_players(query: str) -> list[dict]:
-    """Search players by persona name (OpenDota /search)."""
-    data = await _get("/search", params={"q": query})
-    return data if isinstance(data, list) else []
-
-
 async def fetch_heroes() -> list[dict]:
     """Hero constants (OpenDota /heroes): includes numeric id + localized_name."""
     data = await _get("/heroes")

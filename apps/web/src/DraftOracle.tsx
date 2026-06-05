@@ -30,9 +30,8 @@ import { MetaStatus } from "./components/MetaStatus";
 import { MicDictate } from "./components/MicDictate";
 import { Portrait } from "./components/Portrait";
 import { PosSelect } from "./components/PosSelect";
-import { RecentImport } from "./components/RecentImport";
 import { TierPill } from "./components/TierPill";
-import { type MatchImportResponse, getMatchups } from "./lib/api";
+import { getMatchups } from "./lib/api";
 
 interface BoardPick {
   id: string;
@@ -102,20 +101,6 @@ export function DraftOracle() {
     updateSide(side, (arr) => arr.map((x) => (x.id === id ? { ...x, pos } : x)));
   const removeB = (side: Side, id: string) =>
     updateSide(side, (arr) => arr.filter((x) => x.id !== id));
-
-  const importMatch = (match: MatchImportResponse) => {
-    // Build board picks (hero + role) for one side, from the match's player list.
-    const sidePicks = (radiantSide: boolean): BoardPick[] =>
-      match.players
-        .filter((p) => p.hero && HERO_BY_ID[p.hero] && p.is_radiant === radiantSide)
-        .slice(0, 5)
-        .map((p) => ({ id: p.hero as string, pos: (p.position as Role | null) ?? null }));
-    // null or true → treat radiant as the ally side; false → ally is dire.
-    const allyRadiant = match.searched_is_radiant !== false;
-    setTeam(sidePicks(allyRadiant));
-    setEnemy(sidePicks(!allyRadiant));
-    setShowBoard(false);
-  };
 
   // Append dictated/parsed heroes to the current board side (skips dupes + full sides).
   const addManyToBoard = (ids: string[]) => {
@@ -335,9 +320,6 @@ export function DraftOracle() {
             />
           )}
         </Card>
-
-        {/* MATCH IMPORT */}
-        <RecentImport onImport={importMatch} />
 
         {/* DRAFT BOARD */}
         <Card>
