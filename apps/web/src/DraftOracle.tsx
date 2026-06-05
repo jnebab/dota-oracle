@@ -22,7 +22,7 @@ import {
   Swords,
   X,
 } from "lucide-react";
-import { Fragment, type ReactNode, useMemo, useState } from "react";
+import { Fragment, type ReactNode, useEffect, useMemo, useState } from "react";
 import { useCoach } from "./coach/useCoach";
 import { CoachPanel } from "./components/CoachPanel";
 import { HeroPicker } from "./components/HeroPicker";
@@ -32,6 +32,7 @@ import { Portrait } from "./components/Portrait";
 import { PosSelect } from "./components/PosSelect";
 import { TierPill } from "./components/TierPill";
 import { getMatchups } from "./lib/api";
+import { emptyPools, loadPrefs, savePrefs } from "./lib/storage";
 
 interface BoardPick {
   id: string;
@@ -51,44 +52,43 @@ function Card({ children }: { children: ReactNode }) {
   );
 }
 
-const DEFAULT_POOL = [
-  "juggernaut",
-  "wraith-king",
-  "spectre",
-  "kez",
-  "necrophos",
-  "faceless-void",
-  "drow-ranger",
-  "phantom-assassin",
-  "sniper",
-  "lifestealer",
-  "luna",
-  "medusa",
-  "slark",
-  "sven",
-];
-
 export function DraftOracle() {
-  const [poolIds, setPoolIds] = useState<string[]>(DEFAULT_POOL);
-  const [myRole, setMyRole] = useState<Role>("Carry");
-  const [rank, setRank] = useState<Rank>("Archon");
+  const [saved] = useState(loadPrefs);
+  // Per-role hero pools, persisted to localStorage. No hardcoded defaults.
+  const [pools, setPools] = useState<Record<Role, string[]>>(() => ({
+    ...emptyPools(),
+    ...(saved.pools ?? {}),
+  }));
+  const [myRole, setMyRole] = useState<Role>(() => saved.role ?? "Carry");
+  const [rank, setRank] = useState<Rank>(() => saved.rank ?? "Archon");
   const [team, setTeam] = useState<BoardPick[]>([]);
   const [enemy, setEnemy] = useState<BoardPick[]>([]);
   const [boardTarget, setBoardTarget] = useState<Side>("ally");
   const [showPool, setShowPool] = useState(false);
   const [showBoard, setShowBoard] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [showCount, setShowCount] = useState(3); // how many recs to render (Infinity = all)
+  const [showCount, setShowCount] = useState(() => saved.showCount ?? 3);
+
+  // Persist pool/role/rank/showCount so the user's selection survives reloads.
+  useEffect(() => {
+    savePrefs({ pools, role: myRole, rank, showCount });
+  }, [pools, myRole, rank, showCount]);
+
+  const poolIds = pools[myRole];
 
   const boardUsed = new Set<string>([...team.map((x) => x.id), ...enemy.map((x) => x.id)]);
   const enemyHeroes = enemy
     .map((x) => HERO_BY_ID[x.id])
     .filter((h): h is NonNullable<typeof h> => !!h);
 
-  const addPool = (id: string) => {
-    if (!poolIds.includes(id)) setPoolIds([...poolIds, id]);
-  };
-  const removePool = (id: string) => setPoolIds(poolIds.filter((x) => x !== id));
+  // Pool edits apply to the currently-selected role's pool.
+  const addPool = (id: string) =>
+    setPools((p) => {
+      const current = p[myRole] ?? [];
+      return current.includes(id) ? p : { ...p, [myRole]: [...current, id] };
+    });
+  const removePool = (id: string) =>
+    setPools((p) => ({ ...p, [myRole]: (p[myRole] ?? []).filter((x) => x !== id) }));
   const addBoard = (id: string) => {
     if (boardTarget === "ally") {
       if (team.length < 5) setTeam([...team, { id, pos: null }]);
@@ -279,6 +279,17 @@ export function DraftOracle() {
                   : "raw high-MMR meta"}
             </span>
           </div>
+          <div className="mb-2 flex items-center gap-2">
+            <span
+              className="oracle-display fs11 uppercase tracking-widest"
+              style={{ color: "#6b7280" }}
+            >
+              {myRole} pool
+            </span>
+            <span className="oracle-mono fs10" style={{ color: "#5d6470" }}>
+              {poolIds.length}
+            </span>
+          </div>
           <div className="flex flex-wrap gap-1.5">
             {poolIds
               .map((id) => HERO_BY_ID[id])
@@ -308,7 +319,7 @@ export function DraftOracle() {
               ))}
             {poolIds.length === 0 && (
               <p className="fs11 italic" style={{ color: "#566070" }}>
-                your pool is empty — add the heroes you play
+                no {myRole} heroes yet — add the ones you play with “Add hero”
               </p>
             )}
           </div>
@@ -316,7 +327,8 @@ export function DraftOracle() {
             <HeroPicker
               onPick={addPool}
               excludeIds={new Set(poolIds)}
-              placeholder="add any hero to your pool…"
+              roleFilter={myRole}
+              placeholder={`add a ${myRole} you play…`}
               accent="#74b13f"
             />
           )}

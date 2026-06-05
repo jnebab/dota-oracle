@@ -1,4 +1,4 @@
-import { HEROES, META } from "@dota-oracle/data";
+import { HEROES, META, type Role } from "@dota-oracle/data";
 import { Search } from "lucide-react";
 import { useState } from "react";
 import { Portrait } from "./Portrait";
@@ -9,12 +9,23 @@ interface HeroPickerProps {
   excludeIds: Set<string>;
   placeholder: string;
   accent: string;
+  /** When set, only heroes that can play this role are shown. */
+  roleFilter?: Role;
 }
 
-export function HeroPicker({ onPick, excludeIds, placeholder, accent }: HeroPickerProps) {
+export function HeroPicker({
+  onPick,
+  excludeIds,
+  placeholder,
+  accent,
+  roleFilter,
+}: HeroPickerProps) {
   const [q, setQ] = useState("");
   const list = HEROES.filter(
-    (h) => !excludeIds.has(h.id) && h.name.toLowerCase().includes(q.toLowerCase()),
+    (h) =>
+      !excludeIds.has(h.id) &&
+      (!roleFilter || h.roles.includes(roleFilter)) &&
+      h.name.toLowerCase().includes(q.toLowerCase()),
   );
   return (
     <div
