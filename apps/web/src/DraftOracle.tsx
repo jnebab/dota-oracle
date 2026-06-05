@@ -446,7 +446,7 @@ export function DraftOracle() {
             className="oracle-display text-sm uppercase tracking-widest"
             style={{ color: "#f0e6cf" }}
           >
-            Best {myRole} from your pool
+            Top 3 {myRole} picks from your pool
           </h2>
           <span className="oracle-mono fs10 ml-auto" style={{ color: "#6b7280" }}>
             7.41d · {rank}
@@ -495,7 +495,7 @@ export function DraftOracle() {
           </div>
         ) : (
           <div className="flex flex-col gap-2.5">
-            {recs.map((r, i) => {
+            {recs.slice(0, 3).map((r, i) => {
               const open = expandedId === r.hero.id || (expandedId === null && i === 0);
               const g = open ? buildGuide(r.hero, enemyHeroes) : null;
               return (
