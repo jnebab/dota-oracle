@@ -78,6 +78,7 @@ export function DraftOracle() {
   const [showPool, setShowPool] = useState(false);
   const [showBoard, setShowBoard] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showCount, setShowCount] = useState(3); // how many recs to render (Infinity = all)
 
   const boardUsed = new Set<string>([...team.map((x) => x.id), ...enemy.map((x) => x.id)]);
   const enemyHeroes = enemy
@@ -440,14 +441,39 @@ export function DraftOracle() {
         </Card>
 
         {/* RECOMMENDATIONS */}
-        <div className="mb-2.5 flex items-center gap-2">
+        <div className="mb-2.5 flex flex-wrap items-center gap-2">
           <Sparkles size={16} color="#c79a45" />
           <h2
             className="oracle-display text-sm uppercase tracking-widest"
             style={{ color: "#f0e6cf" }}
           >
-            Top 3 {myRole} picks from your pool
+            Best {myRole} picks from your pool
           </h2>
+          {recs.length > 1 && (
+            <div className="flex items-center gap-1">
+              {(
+                [
+                  ["Top 3", 3],
+                  ["Top 5", 5],
+                  ["All", Number.POSITIVE_INFINITY],
+                ] as const
+              ).map(([label, n]) => (
+                <button
+                  type="button"
+                  key={label}
+                  onClick={() => setShowCount(n)}
+                  className="oracle-mono fs10 rounded px-2 py-0.5 tracking-wide"
+                  style={{
+                    color: showCount === n ? "#0b0d10" : "#aeb4be",
+                    background: showCount === n ? "#c79a45" : "rgba(255,255,255,.04)",
+                    border: `1px solid ${showCount === n ? "#c79a45" : "rgba(255,255,255,.08)"}`,
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
           <span className="oracle-mono fs10 ml-auto" style={{ color: "#6b7280" }}>
             7.41d · {rank}
           </span>
@@ -495,7 +521,7 @@ export function DraftOracle() {
           </div>
         ) : (
           <div className="flex flex-col gap-2.5">
-            {recs.slice(0, 3).map((r, i) => {
+            {recs.slice(0, showCount).map((r, i) => {
               const open = expandedId === r.hero.id || (expandedId === null && i === 0);
               const g = open ? buildGuide(r.hero, enemyHeroes) : null;
               return (
