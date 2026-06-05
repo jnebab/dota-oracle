@@ -28,7 +28,7 @@ import {
 } from "./schemas";
 import { SYNERGIES } from "./synergies";
 
-export const DATA_VERSION = "7.41c";
+export const DATA_VERSION = "7.41d";
 
 /**
  * Validate every bundled dataset against its zod schema, and assert that all

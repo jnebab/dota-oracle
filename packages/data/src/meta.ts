@@ -4,7 +4,7 @@ import type { MetaTier, Tier } from "./types";
 export const TIERW: Record<Tier, number> = { S: 3, A: 2, B: 1, C: -0.5, D: -1.5 };
 
 /**
- * 7.41c carry-meta read (hand-tuned from DotaBuff / Dota2ProTracker / patch coverage).
+ * 7.41d carry-meta read (hand-tuned from DotaBuff / Dota2ProTracker / patch coverage).
  * M5 swaps this for an auto-refreshed snapshot; the bracket overlay stays.
  */
 export const META: Record<string, MetaTier> = {
@@ -40,7 +40,7 @@ export const META: Record<string, MetaTier> = {
   "troll-warlord": { tier: "B", note: "bullies the lane, falls off late" },
   alchemist: { tier: "D", note: "gutted by gold/sustain nerfs" },
   "lone-druid": { tier: "D", note: "heavy nerfs, fell off hard" },
-  "anti-mage": { tier: "D", note: "too slow for the 7.41c tempo" },
+  "anti-mage": { tier: "D", note: "too slow for the 7.41d tempo" },
   "templar-assassin": { tier: "C", note: "underwhelming this patch" },
   sven: { tier: "B", note: "huge Cleave crits + God's Strength; a pub wrecking ball" },
 };

@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     cron_secret: str | None = None
 
     # Defaults for the meta endpoint.
-    default_patch: str = "7.41c"
+    default_patch: str = "7.41d"
 
     # CORS: origins allowed to call the API in the browser (dev convenience;
     # same-origin Vercel deploys don't need this). Comma-separated.

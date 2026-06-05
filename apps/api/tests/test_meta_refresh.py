@@ -40,7 +40,7 @@ def test_meta_falls_back_to_seed_without_redis() -> None:
 
 def test_meta_serves_computed_snapshot(monkeypatch: pytest.MonkeyPatch) -> None:
     snapshot = {
-        "patch": "7.41c",
+        "patch": "7.41d",
         "source": "computed",
         "tiers": {"spectre": {"tier": "A", "note": "auto · 52.0% win rate"}},
     }

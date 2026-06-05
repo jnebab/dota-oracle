@@ -14,7 +14,7 @@ export interface Hero {
   tags: string[];
 }
 
-/** 7.41c meta read for a hero, keyed by hero id in {@link META}. */
+/** 7.41d meta read for a hero, keyed by hero id in {@link META}. */
 export interface MetaTier {
   tier: Tier;
   note: string;

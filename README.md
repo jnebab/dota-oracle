@@ -26,7 +26,7 @@ adaptive coaching panel — instantly, in the browser.
 
 | | Feature | Notes |
 |---|---|---|
-| 🎯 | **Smart pick recommendations** | Ranks your pool for your role by 7.41c meta tier, counters, kit-tag matchups, synergy, and **rank-bracket** weighting. |
+| 🎯 | **Smart pick recommendations** | Ranks your pool for your role by 7.41d meta tier, counters, kit-tag matchups, synergy, and **rank-bracket** weighting. |
 | 🪙 | **Lineup-tuned item builds** | Core path per hero + situational items computed from the enemy's threats (BKB vs magic, MKB vs evasion, cleave vs illusions…). |
 | 📊 | **Real win-rate matchups** | Pulls actual hero-vs-hero win rates (OpenDota) for the enemies on the board and folds them into the score — falls back to bundled counters offline. |
 | 🤖 | **Adaptive AI coach** | A panel that **reconfigures itself** per lineup — surfacing the right advice modules. Uses Chrome's **on-device** Gemini Nano when available, with a deterministic rule-based tier everywhere else. |

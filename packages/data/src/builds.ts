@@ -80,7 +80,7 @@ export const CORE_BUILDS: Record<string, Build> = {
       "Manta Style",
       "Daedalus",
     ],
-    note: "The 7.41c Battlefury + Aghs build keeps you proactive even when Chrono is down; MoM → Maelstrom is the alt vs a hero you must kill fast (e.g. Anti-Mage).",
+    note: "The 7.41d Battlefury + Aghs build keeps you proactive even when Chrono is down; MoM → Maelstrom is the alt vs a hero you must kill fast (e.g. Anti-Mage).",
   },
   "drow-ranger": {
     key: "Dragon Lance",
@@ -364,7 +364,7 @@ export const CORE_BUILDS: Record<string, Build> = {
       "Abyssal Blade",
       "Heart of Tarrasque",
     ],
-    note: "Greevil's Greed funds a huge tempo lead — but weakened in 7.41c.",
+    note: "Greevil's Greed funds a huge tempo lead — but weakened in 7.41d.",
   },
   "lone-druid": {
     key: "Assault Cuirass",
@@ -376,7 +376,7 @@ export const CORE_BUILDS: Record<string, Build> = {
       "Moon Shard",
       "Abyssal Blade",
     ],
-    note: "Bear-centric split-push; nerfed hard in 7.41c.",
+    note: "Bear-centric split-push; nerfed hard in 7.41d.",
   },
   "templar-assassin": {
     key: "Desolator",

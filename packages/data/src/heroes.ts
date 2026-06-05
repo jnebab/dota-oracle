@@ -1,7 +1,7 @@
 import type { Attr, Hero, Role } from "./types";
 
 /**
- * Full Dota 2 hero pool (through Largo, 7.41c), ported from the prototype.
+ * Full Dota 2 hero pool (through Largo, 7.41d), ported from the prototype.
  * Format: "Name|attr|roles|tags" where roles are
  * c=Carry m=Mid o=Offlane s=Support h=Hard Support.
  */

@@ -1,7 +1,7 @@
 # Draft Oracle — project context for Claude Code
 
 A Dota 2 **draft + live-match advisor**. Given the player's hero pool, role, rank, and the
-allied/enemy lineup, it recommends which carry to pick — ranked by current-patch (7.41c) meta,
+allied/enemy lineup, it recommends which carry to pick — ranked by current-patch (7.41d) meta,
 matchups (counters/synergy), and **rank bracket** — and produces a lineup-tuned item build for
 each pick. It can also pull a *live* game off STRATZ by username or SteamID and auto-fill the board.
 
@@ -82,4 +82,4 @@ LiveMatch   { radiant:Hero[]; dire:Hero[]; positions?; gameTime }
 
 ## Definition of done (v1)
 Enter pool + role + rank, type a live player's name/SteamID, and get a ranked carry pick with a
-lineup-tuned build — backed by auto-refreshed 7.41c meta and bracket-aware weighting.
+lineup-tuned build — backed by auto-refreshed 7.41d meta and bracket-aware weighting.

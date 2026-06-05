@@ -1,5 +1,5 @@
 {
-  "patch": "7.41c",
+  "patch": "7.41d",
   "source": "seed",
   "tiers": {
     "spectre": {
@@ -34,7 +34,7 @@
     "troll-warlord": { "tier": "B", "note": "bullies the lane, falls off late" },
     "alchemist": { "tier": "D", "note": "gutted by gold/sustain nerfs" },
     "lone-druid": { "tier": "D", "note": "heavy nerfs, fell off hard" },
-    "anti-mage": { "tier": "D", "note": "too slow for the 7.41c tempo" },
+    "anti-mage": { "tier": "D", "note": "too slow for the 7.41d tempo" },
     "templar-assassin": { "tier": "C", "note": "underwhelming this patch" },
     "sven": { "tier": "B", "note": "huge Cleave crits + God's Strength; a pub wrecking ball" }
   }

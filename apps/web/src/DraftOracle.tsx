@@ -216,7 +216,7 @@ export function DraftOracle() {
             </h1>
             <p className="fs11 sm:text-sm" style={{ color: "#7d8593" }}>
               Picks from <span style={{ color: "#c79a45" }}>your hero pool</span> for{" "}
-              <span style={{ color: "#c79a45" }}>your role</span> · weighted by 7.41c meta
+              <span style={{ color: "#c79a45" }}>your role</span> · weighted by 7.41d meta
             </p>
           </div>
           <div className="ml-auto">
@@ -467,7 +467,7 @@ export function DraftOracle() {
             Best {myRole} from your pool
           </h2>
           <span className="oracle-mono fs10 ml-auto" style={{ color: "#6b7280" }}>
-            7.41c · {rank}
+            7.41d · {rank}
           </span>
         </div>
         {bracketFactor > 0 && (
@@ -692,7 +692,7 @@ export function DraftOracle() {
                         className="oracle-mono fs10 mt-2.5 inline-flex items-center gap-1"
                         style={{ color: "#6b7280" }}
                       >
-                        Build basis: 7.41c pub &amp; pro trends · full guide ↗
+                        Build basis: 7.41d pub &amp; pro trends · full guide ↗
                       </a>
                     </div>
                   )}
@@ -705,7 +705,7 @@ export function DraftOracle() {
         <div className="fs11 mt-4 flex items-start gap-2" style={{ color: "#5d6470" }}>
           <ShieldAlert size={13} className="mt-0.5 shrink-0" />
           <p className="oracle-root italic">
-            Suggests only heroes from your pool that can play {myRole}, ranked by 7.41c meta tier
+            Suggests only heroes from your pool that can play {myRole}, ranked by 7.41d meta tier
             plus matchups vs the enemy board and synergy with your team. Meta read is hand-tuned
             from current DotaBuff / Dota2ProTracker trends and will drift as Valve patches —
             re-check before relying on it in ranked.

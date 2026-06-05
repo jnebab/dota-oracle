@@ -1,4 +1,12 @@
-import { BRACKET_FIT, COUNTERS, type Hero, META, SYNERGIES, TIERW } from "@dota-oracle/data";
+import {
+  BRACKET_FIT,
+  COUNTERS,
+  DATA_VERSION,
+  type Hero,
+  META,
+  SYNERGIES,
+  TIERW,
+} from "@dota-oracle/data";
 import { EDGE_TEXT, has, tagEdges } from "./tags";
 import type { MatchupTable, Reason, ScoreResult } from "./types";
 
@@ -35,7 +43,7 @@ export function scoreHero(
   if (meta) {
     const w = TIERW[meta.tier];
     total += w;
-    push(w, `7.41c ${meta.tier}-tier · ${meta.note}`);
+    push(w, `${DATA_VERSION} ${meta.tier}-tier · ${meta.note}`);
   }
 
   const bf = BRACKET_FIT[cand.id];
